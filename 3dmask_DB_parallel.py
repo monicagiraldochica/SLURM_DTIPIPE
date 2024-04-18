@@ -43,8 +43,8 @@ def main():
             sys.exit(f"ERROR: {prefix}.nii.gz not found")
 
         cmd = f"echo 'Masking {diffdir}' && "\
-        f"fslroi {prefix} {prefix}_b0 0 -1 0 -1 0 -1 0 1 &&"\
-        f"bet {prefix}_b0 {prefix}_bet -f 0.1 -g 0 -n -m &&"\
+        f"fslroi {prefix} {prefix}_b0 0 -1 0 -1 0 -1 0 1 && "\
+        f"bet {prefix}_b0 {prefix}_bet -f 0.1 -g 0 -n -m && "\
         f"echo 'done {diffdir}'"
         p = subprocess.Popen(cmd,shell=True)
         procs+=[p]
