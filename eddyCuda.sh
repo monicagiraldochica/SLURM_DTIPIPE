@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=eddyCuda
 #SBATCH --time=65:00:00
-#SBATCH --account=account
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=6
+#SBATCH --account=jbinder
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=7gb
 #SBATCH --gres=gpu:v100:1
 #SBATCH --partition=gpu
