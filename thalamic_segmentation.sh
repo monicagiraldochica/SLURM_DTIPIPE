@@ -28,6 +28,7 @@ REFERENCE=HCP40_MNI_1.25mm.nii.gz
 OUTPUT=$outdir/fa2tom
 AFFINE=${OUTPUT}Affine.txt
 WARP=${OUTPUT}Warp.nii.gz
+INVWARP=${OUTPUT}InverseWarp.nii.gz
 
 cmd="ANTS 3 -m CC[${REFERENCE},${INPUT},1,5] -o ${OUTPUT}.nii.gz -r Gauss[2,0] -t SyN[0.25] -i 30x99x11 --use-Histogram-Matching"
 echo $cmd
@@ -38,7 +39,7 @@ echo $cmd
 eval $cmd
 
 # Apply inverse transformation to each of the ROI
-declare -a roi_array=("Frontal" "Insular" "Limbic" "Occipital" "Parietal" "Temporal")
+declare -a roi_array=("Frontal" "Motor" "Somatosensory" "Occipital" "Parietal" "Temporal")
 
 for hem in "Left" "Right"
 do
