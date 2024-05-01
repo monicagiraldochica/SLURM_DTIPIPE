@@ -72,6 +72,8 @@ done
 wait
 
 # Run tractography
+MERGED="${outdir}/data.bedpostX_v4/merged"
+MASK="${outdir}/nodif_brain_mask.nii.gz"
 for hem in "Left" "Right"
 do
         for roi in ${roi_array[@]}
@@ -81,8 +83,6 @@ do
                 AVOID="${outdir}/${avd_hem}Hemisphere+${gm}-${roi}"
 		SEED="${outdir}/${hem}Tha_Thalamus.nii.gz"
 		TARGET="${outdir}/${hem}${roi}.nii.gz"
-		MERGED="${outdir}/data.bedpostX_v4/merged"
-		MASK="${outdir}/nodif_brain_mask.nii.gz"
 		output="${outdir}/${hem}Thal2${roi}"
 		cmd="probtrackx2 -x ${SEED} -l --modeuler --onewaycondition -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s ${MERGED} -m ${MASK} --dir=${output} --avoid=${AVOID} --stop=${TARGET} --os2t --targetmasks=${TARGET}"
 
