@@ -46,7 +46,7 @@ do
 	for roi in ${roi_array[@]} "GM" "Hemisphere" "Tha_Thalamus"
 	do
 		MASK="${hem}${roi}.nii.gz"
-		OUT_MASK="${outdir}/${hem}${roi}.nii.gz"
+		OUT_MASK="${outdir}/${MASK}"
 		cmd="WarpImageMultiTransform 3 ${MASK} ${OUT_MASK} -i ${AFFINE} ${INVWARP} -R ${REFERENCE} --use-NN"
 
 		echo $cmd
