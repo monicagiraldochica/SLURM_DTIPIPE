@@ -82,6 +82,7 @@ do
 done
 echo "DONE innorm"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

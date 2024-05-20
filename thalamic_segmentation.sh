@@ -6,6 +6,7 @@
 #SBATCH --mem-per-cpu=10gb
 #SBATCH --partition=bigmem
 #SBATCH --array=1-48%10
+#SBATCH --account=account
 set -e
 STARTTIME=$(date +%s)
 
@@ -121,6 +122,7 @@ wait
 
 echo "DONE thalamicSeg"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

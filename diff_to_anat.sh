@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=3dmask
+#SBATCH --job-name=diff_to_anat
 #SBATCH --time=00:05:00
 #SBATCH --account=account
 #SBATCH --ntasks=1
@@ -9,26 +9,23 @@
 set -e
 STARTTIME=$(date +%s)
 
-module load fsl/6.0.4
-PATH=${FSLDIR}/bin:$PATH
-. ${FSLDIR}/etc/fslconf/fsl.sh
-
 scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
-echo "Running 3dmask on ${sbj}: ${sess}"
-cd $scratch/$sbj/$sess
+echo "Running diff_to_anat on ${sbj}: ${sess}"
+cd $scratch/$sbj/$ses
 
-for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
-do
-        prefix="${sbj}_3T_DWI_dir${ddir}"
-        [ ! -f $prefix.nii.gz ] && continue
-        echo $prefix
-        fslroi $prefix ${prefix}_b0 0 -1 0 -1 0 -1 0 1
-        bet ${prefix}_b0 ${prefix}_bet -f 0.1 -g 0 -n -m
-done
-echo "DONE 3dmask"
+brain=surf/T1w_brain.nii.gz
+data=data/data.nii.gz
+mask=data/nodif_brain_mask.nii.gz
+nodif_brain=data/nodif_brain.nii.gz
+
+fslmaths $data -mul $mask $nodif_brain
+
+flirt -in $nodif_brain -ref $brain -out surf/nodif_toAnat -omat surf/nodif_toAnat.mat -bins 256 -cost corratio -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -dof 12  -interp trilinear
+
+echo "DONE diff_to_anat"
 
 # Compute execution time
 FINISHTIME=$(date +%s)

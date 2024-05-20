@@ -193,6 +193,7 @@ mv preEddy/index.txt preEddy/acqparams.txt eddy/
 cp eddy/acqparams.txt topup/
 echo "DONE preTopup"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

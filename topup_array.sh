@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
-#SBATCH --array=1-3
+#SBATCH --array=1-48%10
 set -e
 STARTTIME=$(date +%s)
 
@@ -77,6 +77,7 @@ echo -e "\n4. Generate nodif brain mask"
 bet hifib0 nodif_brain -n -m -f 0.2
 echo "DONE topup"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

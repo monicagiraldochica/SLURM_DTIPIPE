@@ -14,8 +14,7 @@ PATH=${FSLDIR}/bin:$PATH
 
 sbj=sbj
 sess=sess
-scratch=scratch/$sbj/$sess
-cd $scratch
+cd scratch/$sbj/$sess
 
 echo "Running 3dmask on ${sbj}: ${sess}"
 for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
@@ -28,6 +27,7 @@ do
 done
 echo "DONE 3dmask"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

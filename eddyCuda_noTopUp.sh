@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=eddyCuda
-#SBATCH --time=65:00:00
+#SBATCH --time=32:00:00
 #SBATCH --account=account
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
@@ -25,13 +25,22 @@ index=eddy/index.txt
 acqp=eddy/acqparams.txt
 bvecs=eddy/Pos_Neg.bvec
 bvals=eddy/Pos_Neg.bval
-specFile=eddy/slspecFile.txt
 out=eddy/eddy_unwarped_images
 mask=topup/nodif_brain_mask
-topup=topup/topup_Pos_Neg_b0
 
 echo "Running eddyCuda on ${sbj}: ${sess}"
-eddy_cuda --imain=$imain --mask=$mask --index=$index --acqp=$acqp --bvecs=$bvecs --bvals=$bvals --topup=$topup --out=$out --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=lsr --fep --ol_nstd=3 --ol_type=both --slspec=$specFile --mporder=12 --very_verbose --s2v_niter=10 --cnr_maps --niter=9 --s2v_lambda=10 --nvoxhp=2000 --ol_pos
+
+# Create index file
+rm -f $index $acqp
+nvols=$(fslval $imain dim4)
+for ((i=1; i<=$nvols; i+=1)); do echo 1 >> $index; done
+
+# Create acqp file
+echo "0 -1 0 .125970" >> $acqp
+
+# Run eddy
+eddy_cuda --imain=$imain --mask=$mask --index=$index --acqp=$acqp --bvecs=$bvecs --bvals=$bvals --out=$out --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=jac --fep --ol_type=sw --mporder=12 --very_verbose --cnr_maps --niter=9 --ol_pos
+
 echo "DONE eddyCuda"
 
 # Compute execution time

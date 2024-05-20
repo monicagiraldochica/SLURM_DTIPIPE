@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
-#SBATCH --array=1-3
+#SBATCH --array=1-48%10
 set -e
 STARTTIME=$(date +%s)
 
@@ -85,6 +85,7 @@ do
 done
 echo "DONE innorm"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

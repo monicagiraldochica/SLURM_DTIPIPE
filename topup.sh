@@ -76,6 +76,7 @@ echo -e "\n4. Generate nodif brain mask"
 bet hifib0 nodif_brain -n -m -f 0.2
 echo "DONE topup"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

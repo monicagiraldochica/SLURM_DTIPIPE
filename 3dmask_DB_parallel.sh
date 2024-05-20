@@ -22,6 +22,7 @@ echo "Running 3dmask on ${sbj}: ${sess}"
 python3 $scratch/3dmask_DB_parallel.py $sess $sessdir
 echo "DONE 3dmask"
 
+# Compute execution time
 FINISHTIME=$(date +%s)
 TOTDURATION_S=$((FINISHTIME - STARTTIME))
 DURATION_H=$((TOTDURATION_S / 3600))

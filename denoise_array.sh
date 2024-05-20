@@ -1,14 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name=3dmask
-#SBATCH --time=00:05:00
+#SBATCH --job-name=denoise
+#SBATCH --time=24:00:00
 #SBATCH --account=account
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=3gb
+#SBATCH --mem-per-cpu=10gb
+#SBATCH --partition=bigmem
 #SBATCH --array=1-48%10
 set -e
 STARTTIME=$(date +%s)
 
+module load ants
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
@@ -17,18 +19,31 @@ scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
-echo "Running 3dmask on ${sbj}: ${sess}"
+echo "Running denoise on ${sbj}: ${sess}"
 cd $scratch/$sbj/$sess
 
-for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
+data=data/data.nii.gz
+output=data/data_ds.nii.gz
+mask=data/nodif_brain_mask.nii.gz
+mask4d=data/nodif_brain_mask_4d.nii.gz
+rm -rf $mask4d $output
+
+echo "generating 4d file"
+nvols=$(fslval $data dim4)
+cmd="fslmerge -tr ${mask4d}"
+for i in $(seq $nvols)
 do
-        prefix="${sbj}_3T_DWI_dir${ddir}"
-        [ ! -f $prefix.nii.gz ] && continue
-        echo $prefix
-        fslroi $prefix ${prefix}_b0 0 -1 0 -1 0 -1 0 1
-        bet ${prefix}_b0 ${prefix}_bet -f 0.1 -g 0 -n -m
+	cmd="${cmd} ${mask}"
 done
-echo "DONE 3dmask"
+eval $cmd
+
+echo "denoising image"
+DenoiseImage -d 4 -i $data -o $output -x $mask4d -v -r 1
+
+echo "masking result"
+fslmaths $output -mul $mask -thr 0.00001 $output
+
+echo -e "\nDONE denoise"
 
 # Compute execution time
 FINISHTIME=$(date +%s)
