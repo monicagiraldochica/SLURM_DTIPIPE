@@ -8,6 +8,10 @@
 set -e
 STARTTIME=$(date +%s)
 
+echo "Starting job at $(date)"
+echo "Job name: ${SLURM_JOB_NAME}, Job ID: ${SLURM_JOB_ID}"
+echo "I have ${SLURM_CPUS_ON_NODE} CPUs on compute node $(hostname -s)"
+
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
@@ -25,7 +29,9 @@ do
 	fslroi $prefix ${prefix}_b0 0 -1 0 -1 0 -1 0 1
 	bet ${prefix}_b0 ${prefix}_bet -f 0.1 -g 0 -n -m
 done
+
 echo "DONE 3dmask"
+echo "Ending job at $(date)"
 
 # Compute execution time
 FINISHTIME=$(date +%s)
