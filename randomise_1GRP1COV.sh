@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 module load fsl/6.0.4
