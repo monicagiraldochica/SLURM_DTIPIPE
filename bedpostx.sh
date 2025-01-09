@@ -8,6 +8,7 @@
 #SBATCH --time=168:00:00
 #SBATCH --account=account
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 module load fsl/6.0.4
