@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=15gb
 #SBATCH --partition=bigmem
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 module load fsl/6.0.4
