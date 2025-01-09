@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=3gb
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 echo "Starting job at $(date)"
