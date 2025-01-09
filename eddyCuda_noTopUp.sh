@@ -8,6 +8,7 @@
 #SBATCH --gres=gpu:v100:1
 #SBATCH --partition=gpu
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 module load fsl/6.0.4
