@@ -8,6 +8,7 @@
 #SBATCH --partition=bigmem
 #SBATCH --array=2-48%10
 set -e
+set -u
 STARTTIME=$(date +%s)
 
 module load ants
