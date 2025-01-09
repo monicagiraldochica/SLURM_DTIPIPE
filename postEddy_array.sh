@@ -7,6 +7,7 @@
 #SBATCH --array=1-48%10
 #SBATCH --account=account
 set -e
+set -u
 
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
