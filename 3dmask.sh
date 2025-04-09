@@ -27,8 +27,15 @@ do
 	prefix="${sbj}_3T_DWI_dir${ddir}"
 	[ ! -f $prefix.nii.gz ] && continue
 	echo $prefix
+
+	# Extract the first volume
 	fslroi $prefix ${prefix}_b0 0 -1 0 -1 0 -1 0 1
+
+	# Extract using FSL
 	bet ${prefix}_b0 ${prefix}_bet -f 0.1 -g 0 -n -m
+
+	# Extract using AFNI
+	3dSkullStrip -input ${prefix}_b0 -prefix ${prefix}_skstrip
 done
 
 echo "DONE 3dmask"
