@@ -36,6 +36,9 @@ do
 
 	# Extract using AFNI
 	3dSkullStrip -input ${prefix}_b0 -prefix ${prefix}_skstrip
+
+	# Extract using Freesurfer
+	mri_synthstrip -i ${prefix}_b0.nii.gz -o ${prefix}_stripped.nii.gz
 done
 
 echo "DONE 3dmask"
