@@ -1,10 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=3dmask
-#SBATCH --time=00:02:00
+#SBATCH --time=00:01:00
 #SBATCH --account=account
-#SBATCH --ntasks=1
+#SBATCH --ntasks=4
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=3gb
+#SBATCH --array=1-48%10
+#SBATCH --chdir=/scratch/g/mygroup/mydir
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -14,13 +16,14 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-sbj=sbj
-sess=sess
-scratch=scratch
-sessdir=$scratch/$sbj/$sess
+# Each line of list.txt is of the form sbj_sess
+subjects=($(cat list.txt))
+sessdir=${subjects[SLURM_ARRAY_TASK_ID-1]}
+IFS='_' read -a info2 <<< "${sessdir}"
+sess=${info2[1]}
+echo "Running 3dmask on ${sess}"
 
-echo "Running 3dmask on ${sbj}: ${sess}"
-python3 $scratch/3dmask_DB.py $sess $sessdir
+python3 3dmask_DB_parallel.py $sess $sessdir
 echo "DONE 3dmask"
 
 # Compute execution time

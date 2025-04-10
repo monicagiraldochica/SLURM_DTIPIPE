@@ -1,6 +1,7 @@
 import sys
 import os
 import mysql.connector
+import subprocess
 
 def connect():
     fout = open("db_info.txt",'r')
@@ -35,18 +36,24 @@ def main():
     cursor = cnx.cursor()
     sbj = getSbjID(cursor,sess)
 
+    procs = []
     for diffdir in getIncluded(cursor,sess):
         prefix = f"{sessdir}/{sbj}_3T_DWI_dir{diffdir}"
         if not os.path.isfile(f"{prefix}.nii.gz"):
             sys.exit(f"ERROR: {prefix}.nii.gz not found")
 
-        print("Masking "+diffdir+"...")
-        os.system("fslroi "+prefix+" "+prefix+"_b0 0 -1 0 -1 0 -1 0 1")
-        os.system("bet "+prefix+"_b0 "+prefix+"_bet -f 0.1 -g 0 -n -m")
-        print("done")
+        cmd = f"echo 'Masking {diffdir}' && "\
+        f"fslroi {prefix} {prefix}_b0 0 -1 0 -1 0 -1 0 1 && "\
+        f"bet {prefix}_b0 {prefix}_bet -f 0.1 -g 0 -n -m && "\
+        f"echo 'done {diffdir}'"
+        p = subprocess.Popen(cmd,shell=True)
+        procs+=[p]
 
     cursor.close()
     cnx.close()
+
+    exit_codes = [p.wait() for p in procs]
+    print(exit_codes)
 
 if __name__ == "__main__":
         main()
