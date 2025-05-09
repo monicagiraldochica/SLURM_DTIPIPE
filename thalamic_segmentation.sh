@@ -7,6 +7,7 @@
 #SBATCH --partition=bigmem
 #SBATCH --array=1-48%10
 #SBATCH --account=account
+#SBATCH --chdir=/scratch/g/mygroup/mydir
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -16,13 +17,11 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-scratch=scratch
-subjects=($(cat $scratch/list.txt))
+subjects=($(cat list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
 echo "Running thalamic segmentation on ${sbj} ${sess}"
-outdir=$scratch/$sbj/$sess
-cd $scratch
+outdir=$sbj/$sess
 
 # Transform FA to Brainnetome space
 INPUT=$outdir/fa.nii.gz

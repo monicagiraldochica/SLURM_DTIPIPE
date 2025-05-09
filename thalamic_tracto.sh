@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=25gb
 #SBATCH --partition=bigmem
 #SBATCH --array=2-48%10
+#SBATCH --chdir=/scratch/g/mygroup/mydir
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -16,26 +17,25 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-scratch=scratch
-subjects=($(cat $scratch/list.txt))
+subjects=($(cat list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
 echo -e "Running thalamic tractography on ${sbj} ${sess}\n"
-outdir=$scratch/$sbj/$sess
+outdir=$sbj/$sess
 cd $outdir
 
 REFERENCE=fa.nii.gz
 AFFINE=fa2tomAffine.txt
 INVWARP=fa2tomInverseWarp.nii.gz
-ATLAS=$scratch/BN_Atlas_274_combined.nii.gz
+ATLAS=BN_Atlas_274_combined.nii.gz
 SBJ_ATLAS=BN_Atlas_274_combined.nii.gz
-RH=$scratch/RightHemisphere.nii.gz
+RH=RightHemisphere.nii.gz
 SBJ_RH=RightHemisphere.nii.gz
-RGM=$scratch/RightGM.nii.gz
+RGM=RightGM.nii.gz
 SBJ_RGM=RightGM.nii.gz
-LH=$scratch/LeftHemisphere.nii.gz
+LH=LeftHemisphere.nii.gz
 SBJ_LH=LeftHemisphere.nii.gz
-LGM=$scratch/LeftGM.nii.gz
+LGM=LeftGM.nii.gz
 SBJ_LGM=LeftGM.nii.gz
 
 # Transform masks for exclusion and atlas to subject space

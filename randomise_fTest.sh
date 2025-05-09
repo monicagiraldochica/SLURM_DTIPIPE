@@ -5,6 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
+#SBATCH --chdir=/scratch/g/mygroup/mydir/TBSS
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -14,8 +15,6 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 img=FA
-outDir=TBSS
-cd scratch/$outDir
 
 # This Tests if ANY of the levels is significantly different. To identify which level, one has to perform multiple t-tests.
 # -n 500: generate 500 permutations of the data when building the null distribution to test against. If it runs fast could, I test with more (up to 2000)
