@@ -12,6 +12,8 @@ set -u
 STARTTIME=$(date +%s)
 
 module load fsl/6.0.4
+module load afni
+module load freesurfer
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
