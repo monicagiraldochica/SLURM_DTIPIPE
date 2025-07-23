@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+__author__ = "Monica Keith"
+__status__ = "Production"
+__purpose__ = "Perform post eddy image manipulation"
+
 import sys
 import os
 import datetime

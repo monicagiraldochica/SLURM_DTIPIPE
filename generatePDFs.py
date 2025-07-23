@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+__author__ = "Monica Keith"
+__status__ = "Production"
+__purpose__ = "Generate PDFs with QC"
+
 import sys
 import mrilib
 import fileslib

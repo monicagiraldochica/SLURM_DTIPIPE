@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+__author__ = "Monica Keith"
+__status__ = "Production"
+__purpose__ = "Pre-TBSS file manipulation step1"
+
 import sys
 import os
 import datetime
