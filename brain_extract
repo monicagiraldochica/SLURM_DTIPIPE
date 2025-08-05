@@ -1,0 +1,81 @@
+#!/bin/bash
+set -e
+set -u
+
+## Global variables
+tool=""
+input=""
+valid_tools=("fsl" "afni" "freesurfer" "all_any" "all_all")
+
+## Functions
+printhelp(){
+        echo -e "Mandatory flags:\n" \
+		"\t-i input_file\t: Specify the input file (nifti).\n" \
+                "\t-t tool\t\t: What tool to use. Accepted options: fsl, afni, freesurfer, all_any, all_all (case insensitive).\n" \
+                "\t\t\tall_any will use all the tools and create a final mask with those voxels that are part of ANY of the masks.\n" \
+                "\t\t\tall_all will use all the tools and create a final mask with those voxels that are part of ALL of the masks.\n\n" \
+		\
+                "Optional flags:\n" \
+                "\t-h\t: Print help.\n" \
+                "\t-e\t: Expand the output mask.\n" \
+                "\t-d\t: Dilate the output mask.\n\n" \
+		\
+                "There will be two output files, the brain mask with suffix _mask, and the brain extracted file with suffix _brain.\n" \
+                "Holes will be automatically filled.\n" \
+                "If the input file is 4D, the output file will be too, but the mask will be based on the first volume only.\n" \
+		"Intermediary files will be removed.\n"
+
+	exit
+}
+
+## Main code
+# Read arguments
+while getopts "ht:i:" opt
+do
+	case $opt in
+		h)
+		   printhelp
+		   ;;
+		t)
+		   tool=${OPTARG,,}
+		   ;;
+		i)
+		   input=$OPTARG
+		   ;;
+		\?) # Handle invalid options
+		   echo "Invalid option: -$OPTARG" >&2
+		   exit 1
+		   ;;
+		:) # Handle missing arguments for options
+		   echo "Option -$OPTARG requires an argument." >&2
+		   exit 1
+		   ;;
+	esac
+done
+
+# Do checks
+if [ "${input}" == "" ] || [ "${tool}" == "" ]; then
+	echo -e "Missing mandatory flags.\n"
+	printhelp
+fi
+
+if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
+	echo -e "${tool} is not an acceptable tool for this script.\n"
+	printhelp
+fi
+
+[ ! -f ${input} ] && echo -e "Input file ${input} not found.\n" && exit 1
+
+# Pre-process 4D file if applicable
+
+# Extract using FSL
+
+# Extract using AFNI
+
+# Extract using Freesurfer
+
+# Create final mask if using all tools
+
+# Post-process 4D file if applicable
+
+# Mask brain
