@@ -19,7 +19,7 @@ PATH=${FSLDIR}/bin:$PATH
 
 subjects=($(cat list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-cd $sbj
+cd "${sbj}"
 
 echo "Running bedpostx on ${sbj}"
 bedpostx_gpu data

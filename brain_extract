@@ -64,15 +64,64 @@ if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
 	printhelp
 fi
 
-[ ! -f ${input} ] && echo -e "Input file ${input} not found.\n" && exit 1
+[ ! -f "${input}" ] && echo -e "Input file ${input} not found.\n" && exit 1
+if [[ "${input}" == *".nii.gz" ]]; then
+	ext=".nii.gz"
+elif [[ "${input}" == *".nii" ]]; then
+	ext=".nii"
+else
+	echo "Input file must be in nifti format"
+	exit
+fi
 
 # Pre-process 4D file if applicable
+# Get the number of volumes
+nvols=$(fslval "${input}" dim4)
+# If it's a 4D file, separate each volume
+if [ $nvols -gt 1 ]; then
+	splitdir="${input/$ext/}"
+	mkdir "${splitdir}"
+	fslsplit "${input}" "${splitdir}/vol"
+	b0=$(find "${splitdir}" -maxdepth 1 -type f | sort | head -n 1)
+else
+	b0="${input}"
+fi
+
+# Remove extension from input file
+b0="${b0/$ext/}"
 
 # Extract using FSL
+if [ "${tool}" == "fsl" ]; then
+	bet "${b0}" "${b0}" -f 0.1 -g 0 -n -m
 
 # Extract using AFNI
+elif [ "${tool}" == "afni" ]; then
+	3dSkullStrip -input "${b0}.nii.gz" -mask_vol -prefix "${b0}_mask"
 
 # Extract using Freesurfer
+elif [ "${tool}" == "freesurfer" ]; then
+	mri_synthstrip -i "${b0}.nii.gz" -m "${b0}_mask.nii.gz"
+
+# Extract using all tools
+else
+	# List of processes
+	pid_array=()
+
+	bet "${b0}" "${b0}" -f 0.1 -g 0 -n -m &
+	pid_array[${#pid_array[@]}]=$!
+
+	3dSkullStrip -input "${b0}.nii.gz" -mask_vol -prefix "${b0}_afni.nii.gz" > /dev/null 2>&1 &
+	pid_array[${#pid_array[@]}]=$!
+
+	mri_synthstrip -i "${b0}.nii.gz" -m "${b0}_freesurfer.nii.gz" &
+	pid_array[${#pid_array[@]}]=$!
+
+	# Wait for all processes to finish
+	wait "${pid_array[@]}"
+
+	# Rename FSL mask
+	mv "${b0}_mask.nii.gz" "${b0}_fsl.nii.gz"
+fi
 
 # Create final mask if using all tools
 

@@ -11,16 +11,16 @@ set -u
 STARTTIME=$(date +%s)
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
+subjects=($(cat ${scratch}/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
-echo "Running diff_to_anat on ${sbj}: ${sess}"
-cd $scratch/$sbj/$ses
-
+sess="${sbj}_1"
 brain=surf/T1w_brain.nii.gz
 data=data/data.nii.gz
 mask=data/nodif_brain_mask.nii.gz
 nodif_brain=data/nodif_brain.nii.gz
+
+echo "Running diff_to_anat on ${sbj}: ${sess}"
+cd "${scratch}/${sbj}/${sess}"
 
 fslmaths $data -mul $mask $nodif_brain
 

@@ -19,7 +19,7 @@ subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
 echo "Running innorm on ${sbj}: ${sess}"
-cd $scratch/$sbj/$sess
+cd "${scratch}/${sbj}/${sess}"
 mkdir -p preEddy
 
 echo "Running innorm on ${sbj}: ${sess}"

@@ -16,7 +16,8 @@ PATH=${FSLDIR}/bin:$PATH
 scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
+sess="${sbj}_1"
+
 echo "Running postEddy on ${sbj}: ${sess}"
 cd $scratch
 

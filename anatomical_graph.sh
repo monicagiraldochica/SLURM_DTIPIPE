@@ -4,7 +4,9 @@
 #SBATCH --account=jbinder
 #SBATCH --mem-per-cpu=5gb
 set -e
+set -u
 STARTTIME=$(date +%s)
+
 module load python
 pip3 install networkx
 
@@ -14,7 +16,7 @@ SUBJECTS=($(cat sbj_list.txt))
 sbj=${SUBJECTS[PBS_ARRAYID-1]}
 
 echo "Running anat_graph on ${sbj}..."
-python3 disp_res.py --sbj=$sbj --sess=day1 --pipe=dsi --sbj_path=${sbj}_day1 --location=hpc
+python3 disp_res.py --sbj="${sbj}" --sess=day1 --pipe=dsi --sbj_path="${sbj}_day1" --location=hpc
 echo "DONE anat_graph"
 
 # Compute execution time

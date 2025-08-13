@@ -36,7 +36,7 @@ do
 	pid_array[${#pid_array[@]}]=$!
 
         # Extract using AFNI
-        3dSkullStrip -input ${prefix}_b0 -prefix ${prefix}_skstrip &
+        3dSkullStrip -input ${prefix}_b0 -prefix ${prefix}_skstrip.nii.gz &
 	pid_array[${#pid_array[@]}]=$!
 
         # Extract using Freesurfer
@@ -44,7 +44,7 @@ do
 	pid_array[${#pid_array[@]}]=$!
 done
 
-wait ${pid_array[@]}
+wait "${pid_array[@]}"
 echo "DONE 3dmask"
 
 # Compute execution time

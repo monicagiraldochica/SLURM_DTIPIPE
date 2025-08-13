@@ -16,7 +16,8 @@ PATH=${FSLDIR}/bin:$PATH
 
 sbj=sbj
 sess=sess
-scratch=scratch/$sbj/$sess
+scratch="scratch/${sbj}/${sess}"
+
 cd $scratch
 
 # 1. Calculate the total readout time in seconds
@@ -24,7 +25,7 @@ cd $scratch
 echo "Running preTopup on ${sbj}: ${sess}"
 ES=0.494
 any=$(ls preEddy/??_?.nii.gz | head -n1)
-dimP=$(fslval ${any} dim2)
+dimP=$(fslval "${any}" dim2)
 nPEsteps=$(($dimP - 1))
 # Total readout time is defined as the time from the centre of the first echo to the centre of the last in seconds
 ro_time=$(echo "${ES} * ${nPEsteps}" | bc -l)
@@ -49,12 +50,12 @@ do
 
 		# For each bval (volume), write an entry in the index file
 		IFS=' ' read -a ARRAY <<< "$(cat $entry.bval)"
-		for bval in ${ARRAY[@]}; do echo $entry_index >> preEddy/index.txt; done		
+		for bval in "${ARRAY[@]}"; do echo $entry_index >> preEddy/index.txt; done		
 		((entry_index++))
 
 		# Write the corresponding line for the entry in the acqparams file
 		# There is a non-zero value only in the second column, indicating that phase encoding is performed in the y-direction (typically corresponding to the A<->P)
-		echo 0 1 0 ${ro_time} >> preEddy/acqparams.txt
+		echo 0 1 0 "${ro_time}" >> preEddy/acqparams.txt
 	fi
 done
 
@@ -73,7 +74,7 @@ do
 
 		# For each bval (volume), write an entry in the index file
 		IFS=' ' read -a ARRAY <<< "$(cat $entry.bval)"
-		for bval in ${ARRAY[@]}; do echo $entry_index >> preEddy/index.txt; done
+		for bval in "${ARRAY[@]}"; do echo $entry_index >> preEddy/index.txt; done
 		((entry_index++))
 
 	 	# Write the corresponding line for the entry in the acqparams file

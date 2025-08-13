@@ -15,11 +15,11 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
+subjects=($(cat ${scratch}/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
+sess="${sbj}_1"
 echo "Running dtifitQC on ${sbj}: ${sess}"
-cd $scratch/$sbj/$sess
+cd "${scratch}/${sbj}/${sess}"
 mkdir -p dtifit
 
 for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
@@ -28,7 +28,7 @@ do
         [ ! -f $prefix.nii.gz ] && continue
         echo $prefix
         output="dtifit/dti_${ddir}"
-        dtifit --data=$prefix --out=$output --mask=${prefix}_bet_mask --bvecs=$prefix.bvec --bvals=$prefix.bval
+        dtifit --data=$prefix --out=$output --mask="${prefix}_bet_mask" --bvecs="${prefix}.bvec" --bvals="${prefix}.bval"
 done
 echo "DONE dtifitQC"
 

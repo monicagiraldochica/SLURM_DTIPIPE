@@ -19,9 +19,10 @@ PATH=${FSLDIR}/bin:$PATH
 
 subjects=($(cat list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
+sess="${sbj}_1"
+outdir="${sbj}/${sess}"
+
 echo -e "Running thalamic tractography on ${sbj} ${sess}\n"
-outdir=$sbj/$sess
 cd $outdir
 
 REFERENCE=fa.nii.gz
@@ -74,14 +75,11 @@ then
 			     ["LeftLateralPreFrontalThalamus"]="245"
 			     ["RightLateralPreFrontalThalamus"]="246")
 
-	for roi in ${!dic_vals[@]}
-	do
+	for roi in "${!dic_vals[@]}"; do
 		IFS=',' read -a array <<< ${dic_vals[$roi]}
-		for val in ${array[@]}
-		do
+		for val in "${array[@]}"; do
 			output="tmp${roi}_${val}.nii.gz"
-			if [ ! -f $output ]
-			then
+			if [ ! -f "${output}" ]; then
 				cmd="fslmaths ${SBJ_ATLAS} -thr ${val} -uthr ${val} ${output}"
 				echo $cmd
 				eval $cmd &
@@ -90,10 +88,8 @@ then
 	done
 	wait
 
-	for roi in ${!dic_vals[@]}
-	do
-		if [ ! -f ${roi}.nii.gz ]
-		then
+	for roi in "${!dic_vals[@]}"; do
+		if [ ! -f ${roi}.nii.gz ]; then
 			cmd="fslmaths"
 			for subroi in $(ls tmp${roi}*)
 			do
@@ -110,8 +106,7 @@ then
 	Rcmd_cortex="fslmaths"
 	Lcmd_thal="fslmaths"
 	Rcmd_thal="fslmaths"
-	for roi in ${!dic_vals[@]}
-	do
+	for roi in "${!dic_vals[@]}"; do
 		[[ $roi == Left* ]] && [[ $roi != *Thalamus ]] && Lcmd_cortex="${Lcmd_cortex} ${roi} -add"
 		[[ $roi == Right* ]] && [[ $roi != *Thalamus ]] && Rcmd_cortex="${Rcmd_cortex} ${roi} -add"
 		[[ $roi == Left* ]] && [[ $roi == *Thalamus ]] && Lcmd_thal="${Lcmd_thal} ${roi} -add"
