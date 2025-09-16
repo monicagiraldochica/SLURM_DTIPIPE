@@ -1,0 +1,6 @@
+/scratch/g/rccadmin/mkeith/niftis/HIE-21_T1.nii.gz
+/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_PA.nii.gz
+/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir75_AP.nii.gz
+/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir75_PA.nii.gz
+/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_AP.nii.gz
+/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_PA.nii.gz
