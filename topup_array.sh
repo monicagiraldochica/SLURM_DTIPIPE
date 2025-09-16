@@ -17,10 +17,11 @@ PATH=${FSLDIR}/bin:$PATH
 
 subjects=($(cat list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
+sess="${sbj}_1"
+topup_config_file="${FSLDIR}/etc/flirtsch/b02b0.cnf"
+
 echo "Running topup on ${sbj}: ${sess}"
-cd $sbj/$sess/topup
-topup_config_file=$FSLDIR/etc/flirtsch/b02b0.cnf
+cd "${sbj}/${sess}/topup"
 
 # imain has the first b0 of each series (4 in total if all series exist for the subject)
 # Should generate these files:

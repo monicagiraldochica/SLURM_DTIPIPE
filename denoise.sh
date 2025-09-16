@@ -17,11 +17,11 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
-sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
+subjects=($(cat ${scratch}/list.txt))
+sbj="${subjects[SLURM_ARRAY_TASK_ID-1]}"
+sess="${sbj}_1"
 echo "Running denoise on ${sbj}: ${sess}"
-cd $scratch/$sbj/$sess
+cd "${scratch}/${sbj}/${sess}"
 
 data=data/data.nii.gz
 output=data/data_ds.nii.gz

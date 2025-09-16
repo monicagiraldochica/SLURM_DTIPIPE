@@ -19,15 +19,15 @@ PATH=${FSLDIR}/bin:$PATH
 scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
-echo "Running finaldtifit on ${sbj}: ${sess}"
-cd $scratch/$sbj/$ses
-
+sess="${sbj}_1"
 bvecs=data/bvecs
 bvals=data/bvals
 data=data/data.nii.gz
 mask=data/nodif_brain_mask.nii.gz
 diffDir=data/dtifit
+
+echo "Running finaldtifit on ${sbj}: ${sess}"
+cd "${scratch}/${sbj}/${sess}"
 
 dtifit --data=$data --out=$diffDir/dti --mask=$mask --bvecs=$bvecs --bvals=$bvals --wls
 echo -e "\nDONE finaldtifit"

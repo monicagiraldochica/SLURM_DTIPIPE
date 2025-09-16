@@ -19,23 +19,17 @@ PATH=${FSLDIR}/bin:$PATH
 scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
-echo "Running 3dmask on ${sbj}: ${sess}"
-cd $scratch/$sbj/$ses
-
-skeleton=$FSLDIR/data/standard/FMRIB58_FA-skeleton_1mm.nii.gz
-reference=$FSLDIR/data/standard/FMRIB58_FA_1mm.nii.gz
-
+sess="${sbj}_1"
+skeleton="${FSLDIR}/data/standard/FMRIB58_FA-skeleton_1mm.nii.gz"
+reference="${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz"
 bvecs=data/bvecs
 bvals=data/bvals
 data=data/data.nii.gz
 mask=data/nodif_brain_mask.nii.gz
 diffDir=data/camino
-
 scheme=$diffDir/bvector.scheme
 Bfloat=$diffDir/dwi.Bfloat
 outDir=$diffDir/wlf
-
 Bdouble=$outDir/dt.Bdouble
 snr=$outDir/snr.txt
 fa=$outDir/fa.nii.gz
@@ -46,6 +40,9 @@ fa_transf=$ants/fa.nii.gz
 invwarp=$ants/faInverseWarp.nii.gz
 inverse=$ants/inverse
 sbj_sklt=$inverse/FMRIB58_FA-skeleton_1mm.nii.gz
+
+echo "Running 3dmask on ${sbj}: ${sess}"
+cd "${scratch}/${sbj}/${sess}"
 
 rm -rf $outDir $scheme $Bfloat
 mkdir $outDir

@@ -16,10 +16,11 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh
 scratch=scratch
 subjects=($(cat $scratch/list.txt))
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-sess=${sbj}_1
-echo "Running freesuerfer on ${sbj}: ${sess}"
-rundir=$scratch/$sbj/$sess
+sess="${sbj}_1"
+rundir="${scratch}/${sbj}/${sess}"
+
 cd $rundir
+echo "Running freesuerfer on ${sbj}: ${sess}"
 
 recon-all -sd $rundir -s $sess -i T1w_brain.nii.gz -noskullstrip -all
 mris_convert surf/lh.pial surf/lh.pial.surf.gii &

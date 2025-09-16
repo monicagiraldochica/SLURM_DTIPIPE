@@ -1,167 +1,130 @@
 #!/bin/bash
-set -eo pipefail
-shopt -s nullglob # makes globs expand to nothing if no match
+set -e
+set -u
 
 ## Global variables
 tool=""
 input=""
 valid_tools=("fsl" "afni" "freesurfer" "all_any" "all_all")
-expand=0
-dilate=0
-qc=0
-num_prel=0
 
 ## Functions
 printhelp(){
         echo -e "Mandatory flags:\n" \
-		"\t-i input_file(s)\t: Specify one input file (nifti), a list of nifti files separated by comma, or a text file with the list of input files (all nifti).\n" \
+		"\t-i input_file\t: Specify the input file (nifti).\n" \
                 "\t-t tool\t\t: What tool to use. Accepted options: fsl, afni, freesurfer, all_any, all_all (case insensitive).\n" \
                 "\t\t\tall_any will use all the tools and create a final mask with those voxels that are part of ANY of the masks.\n" \
                 "\t\t\tall_all will use all the tools and create a final mask with those voxels that are part of ALL of the masks.\n\n" \
 		\
                 "Optional flags:\n" \
                 "\t-h\t: Print help.\n" \
-		"\t-p n\t: Process n images in parallel (only makes sense if the number of input files is >1).\n" \
-		"\t-e\t: Expand the output mask(s).\n" \
-		"\t-d\t: Dilate the output mask(s).\n\n" \
-		"\t-q\t: Generate QC images (will take significantly longer to run).\n\n" \
+                "\t-e\t: Expand the output mask.\n" \
+                "\t-d\t: Dilate the output mask.\n\n" \
 		\
                 "There will be two output files, the brain mask with suffix _mask, and the brain extracted file with suffix _brain.\n" \
                 "Holes will be automatically filled.\n" \
-                "If the input file is 4D, the output file will be too, but the mask will be based on the first volume only.\n"
+                "If the input file is 4D, the output file will be too, but the mask will be based on the first volume only.\n" \
+		"Intermediary files will be removed.\n"
 
 	exit
 }
 
-readInputListTXT(){
-	local txtfile="$1"
-	local result="$2"
-
-	# Validate arguments
-	if [[ -z "$txtfile" ]] || [[ -z "$result" ]]; then
-		echo "Missing arguments in readInputListTXT()" >&2
-		return 1
-	fi
-
-	if [[ ! "$txtfile" == *.txt ]]; then
-		echo "Input file to readInputListTXT() must be .txt" >&2
-		return 1
-	fi
-
-	if [[ ! -f "$txtfile" ]]; then
-		echo "${txtfile} not found" >&2
-		return 1
-	fi
-
-	echo -e "\nReading input files list from ${txtfile}"
-	local lines=()
-	while IFS= read -r line; do
-		lines+=("$line")
-	done < "$txtfile"
-
-	# Return array into result variable
-	eval "$result=(\"\${lines[@]}\")"
-}
-
-processNIFTI(){
-	local inputfile="$1"
-
-	echo -e "\nProcessing ${inputfile}"
-
-        # Check that it's not an empty string and the file exists
-        if [ -z $inputfile ] || [ ! -f $inputfile ]; then
-                echo "${inputfile} not found" >&2
-                exit 1
-        fi
-
-        # Check that it's a nifti file
-        if [[ ! "$inputfile" == *.nii ]] && [[ ! "$inputfile" == *.nii.gz ]]; then
-                echo "${inputfile} is not nifti" >&2
-                exit 1
-        fi
-
-        # Get suffix & prefix
-        [[ $inputfile == *.nii.gz ]] && suffix=".nii.gz" || suffix=".nii"
-        prefix=${inputfile%$suffix}
-
-        # Pre-process 4D file if applicable
-        nvols=$(fslval $inputfile dim4)
-        nvols=${nvols/ /}
-        echo "Input file has ${nvols} volumes"
-        if [ $nvols -gt 1 ];then
-                files=($prefix/vol????.nii.gz)
-                nvsplit=${#files[@]}
-                if [ $nvsplit -gt $nvols ]; then
-			echo "Splitting 4D file"
-			mkdir -p $prefix
-			fslsplit $inputfile $prefix/vol
-		else
-                        echo "4D is already split, skipping step"
-			
-                fi
-        fi
-
-	# Extract using FSL
-
-        # Extract using AFNI
-
-        # Extract using Freesurfer
-
-        # Create final mask if using all tools
-
-        # Fill holes
-
-        # Expand if requested
-
-        # Dilate if requested
-
-        # Create QC images if requested
-
-        # Post-process 4D file if applicable
-
-        # Mask brain
-}
-
 ## Main code
 # Read arguments
-while getopts ":ht:i:p:edq" opt
+while getopts "ht:i:" opt
 do
 	case $opt in
-		h) printhelp;;
-		t) tool=${OPTARG,,};; # Convert OPTARG to lower case
-		i) input=$OPTARG;;
-		p) num_prel=$OPTARG;;
-		e) expand=1;;
-		d) dilate=1;;
-		q) qc=1;;
-		\?) echo "Invalid option: -$OPTARG" >&2; exit 1;; # Handle invalid options
-		:) echo "Option -$OPTARG requires an argument." >&2; exit 1;; # Handle missing arguments for options
+		h)
+		   printhelp
+		   ;;
+		t)
+		   tool=${OPTARG,,}
+		   ;;
+		i)
+		   input=$OPTARG
+		   ;;
+		\?) # Handle invalid options
+		   echo "Invalid option: -$OPTARG" >&2
+		   exit 1
+		   ;;
+		:) # Handle missing arguments for options
+		   echo "Option -$OPTARG requires an argument." >&2
+		   exit 1
+		   ;;
 	esac
 done
 
 # Do checks
 if [ "${input}" == "" ] || [ "${tool}" == "" ]; then
-	echo -e "Missing mandatory flags.\n" >&2
+	echo -e "Missing mandatory flags.\n"
 	printhelp
 fi
 
 if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
-	echo -e "${tool} is not an acceptable tool for this script.\n" >&2
+	echo -e "${tool} is not an acceptable tool for this script.\n"
 	printhelp
 fi
 
-# Get the list of input files
-declare -a inputArray
-if [[ $input == *.txt ]]; then
-	readInputListTXT $input inputArray
-elif [[ "$input" == *,* ]]; then
-	IFS=',' read -a inputArray <<< "${input}"
+[ ! -f "${input}" ] && echo -e "Input file ${input} not found.\n" && exit 1
+if [[ "${input}" == *".nii.gz" ]]; then
+	ext=".nii.gz"
+elif [[ "${input}" == *".nii" ]]; then
+	ext=".nii"
 else
-	inputArray=($input)
+	echo "Input file must be in nifti format"
+	exit
 fi
 
-# Process each input file
-for inputfile in ${inputArray[@]}
-do
-	processNIFTI $inputfile
-done
+# Pre-process 4D file if applicable
+# Get the number of volumes
+nvols=$(fslval "${input}" dim4)
+# If it's a 4D file, separate each volume
+if [ $nvols -gt 1 ]; then
+	splitdir="${input/$ext/}"
+	mkdir "${splitdir}"
+	fslsplit "${input}" "${splitdir}/vol"
+	b0=$(find "${splitdir}" -maxdepth 1 -type f | sort | head -n 1)
+else
+	b0="${input}"
+fi
+
+# Remove extension from input file
+b0="${b0/$ext/}"
+
+# Extract using FSL
+if [ "${tool}" == "fsl" ]; then
+	bet "${b0}" "${b0}" -f 0.1 -g 0 -n -m
+
+# Extract using AFNI
+elif [ "${tool}" == "afni" ]; then
+	3dSkullStrip -input "${b0}.nii.gz" -mask_vol -prefix "${b0}_mask"
+
+# Extract using Freesurfer
+elif [ "${tool}" == "freesurfer" ]; then
+	mri_synthstrip -i "${b0}.nii.gz" -m "${b0}_mask.nii.gz"
+
+# Extract using all tools
+else
+	# List of processes
+	pid_array=()
+
+	bet "${b0}" "${b0}" -f 0.1 -g 0 -n -m &
+	pid_array[${#pid_array[@]}]=$!
+
+	3dSkullStrip -input "${b0}.nii.gz" -mask_vol -prefix "${b0}_afni.nii.gz" > /dev/null 2>&1 &
+	pid_array[${#pid_array[@]}]=$!
+
+	mri_synthstrip -i "${b0}.nii.gz" -m "${b0}_freesurfer.nii.gz" &
+	pid_array[${#pid_array[@]}]=$!
+
+	# Wait for all processes to finish
+	wait "${pid_array[@]}"
+
+	# Rename FSL mask
+	mv "${b0}_mask.nii.gz" "${b0}_fsl.nii.gz"
+fi
+
+# Create final mask if using all tools
+
+# Post-process 4D file if applicable
+
+# Mask brain

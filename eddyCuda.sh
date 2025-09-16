@@ -18,9 +18,7 @@ module load readline/6.2.p5
 
 sbj=sbj
 sess=sess
-scratch=scratch/$sbj/$sess
-cd $scratch
-
+scratch="scratch/${sbj}/${sess}"
 imain=eddy/Pos_Neg
 index=eddy/index.txt
 acqp=eddy/acqparams.txt
@@ -31,6 +29,7 @@ out=eddy/eddy_unwarped_images
 mask=topup/nodif_brain_mask
 topup=topup/topup_Pos_Neg_b0
 
+cd $scratch
 echo "Running eddyCuda on ${sbj}: ${sess}"
 eddy_cuda --imain=$imain --mask=$mask --index=$index --acqp=$acqp --bvecs=$bvecs --bvals=$bvals --topup=$topup --out=$out --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=lsr --fep --ol_nstd=3 --ol_type=both --slspec=$specFile --mporder=12 --very_verbose --s2v_niter=10 --cnr_maps --niter=9 --s2v_lambda=10 --nvoxhp=2000 --ol_pos
 echo "DONE eddyCuda"
