@@ -153,15 +153,14 @@ fi
 # Get the list of input files
 declare -a inputArray
 if [[ $input == *.txt ]]; then
-        readInputListTXT $input inputArray
+        readInputListTXT "${input}" inputArray
 elif [[ "$input" == *,* ]]; then
-        IFS=',' read -a inputArray <<< "${input}"
+        IFS=',' read -r -a inputArray <<< "${input}"
 else
-        inputArray=($input)
+        inputArray=("${input}")
 fi
 
 # Process each input file
-for inputfile in ${inputArray[@]}
-do
-        processNIFTI $inputfile
+for inputfile in "${inputArray[@]}"; do
+        processNIFTI "${inputfile}"
 done

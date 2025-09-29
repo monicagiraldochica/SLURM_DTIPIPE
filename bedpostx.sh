@@ -17,7 +17,7 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 cd "${sbj}"
 

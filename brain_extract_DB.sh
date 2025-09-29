@@ -17,13 +17,13 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 # Each line of list.txt is of the form sbj_sess
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sessdir=${subjects[SLURM_ARRAY_TASK_ID-1]}
 IFS='_' read -a info2 <<< "${sessdir}"
 sess=${info2[1]}
 echo "Running 3dmask on ${sess}"
 
-python3 3dmask_DB_parallel.py $sess $sessdir
+python3 3dmask_DB_parallel.py "${sess}" "${sessdir}"
 echo "DONE 3dmask"
 
 # Compute execution time

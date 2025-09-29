@@ -31,7 +31,7 @@ topup=topup/topup_Pos_Neg_b0
 
 cd $scratch
 echo "Running eddyCuda on ${sbj}: ${sess}"
-eddy_cuda --imain=$imain --mask=$mask --index=$index --acqp=$acqp --bvecs=$bvecs --bvals=$bvals --topup=$topup --out=$out --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=lsr --fep --ol_nstd=3 --ol_type=both --slspec=$specFile --mporder=12 --very_verbose --s2v_niter=10 --cnr_maps --niter=9 --s2v_lambda=10 --nvoxhp=2000 --ol_pos
+eddy_cuda --imain="${imain}" --mask="${mask}" --index="${index}" --acqp="${acqp}" --bvecs="${bvecs}" --bvals="${bvals}" --topup="${topup}" --out="${out}" --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=lsr --fep --ol_nstd=3 --ol_type=both --slspec="${specFile}" --mporder=12 --very_verbose --s2v_niter=10 --cnr_maps --niter=9 --s2v_lambda=10 --nvoxhp=2000 --ol_pos
 echo "DONE eddyCuda"
 
 # Compute execution time

@@ -14,7 +14,7 @@ module load freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 rundir="${scratch}/${sbj}/${sess}"

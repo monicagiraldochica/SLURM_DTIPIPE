@@ -17,7 +17,7 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 skeleton="${FSLDIR}/data/standard/FMRIB58_FA-skeleton_1mm.nii.gz"
@@ -44,48 +44,48 @@ sbj_sklt=$inverse/FMRIB58_FA-skeleton_1mm.nii.gz
 echo "Running 3dmask on ${sbj}: ${sess}"
 cd "${scratch}/${sbj}/${sess}"
 
-rm -rf $outDir $scheme $Bfloat
+rm -rf $outDir $scheme "${Bfloat}"
 mkdir $outDir
 
 echo "### Running camino (weighted linear fitting) on ${sbj}: ${sess}"
 
 echo -e "\n## Creating scheme file..."
-fsl2scheme -bvecfile $bvecs -bvalfile $bvals > $scheme
+fsl2scheme -bvecfile "${bvecs}" -bvalfile "${bvals}" > "${scheme}"
 
 echo -e "\n## Checking DWI data type..."
-dt=$(fslval $data data_type)
+dt=$(fslval "${data}" data_type)
 if [ "${dt/ /}" != "FLOAT32" ]
 then
 	echo "Attempting to fix data type"
-	fslmaths $data $data -odt float
-	dt=$(fslval $data data_type)
+	fslmaths "${data}" "${data}" -odt float
+	dt=$(fslval "${data}" data_type)
 	[ "${dt/ /}" != "FLOAT32" ] && echo "ERROR: ${dt} data type" && exit 1
 else
         echo "data type ok"
 fi
 
 echo -e "\n## Converting DWI data..."
-image2voxel -4dimage $data -outputfile $Bfloat
+image2voxel -4dimage "${data}" -outputfile "${Bfloat}"
 
 echo -e "\n## Fitting the diffusion tensor to the data..."
-wdtfit $Bfloat $scheme -bgmask $mask -outputfile $Bdouble
+wdtfit "${Bfloat}" "${scheme}" -bgmask "${mask}" -outputfile "${Bdouble}"
 
 for PROG in fa md
 do
 	echo -e "\n## Computing ${PROG}..."
-	cat $Bdouble | ${PROG} | voxel2image -outputroot $outDir/$PROG -header $data &
+	cat "${Bdouble}" | "${PROG}" | voxel2image -outputroot "${outDir}/${PROG}" -header "${data}" &
 done
 wait
 
 echo -e "\n## Transforming FA map to STD space..."
-ANTS 3 -m CC[$reference,$fa,1,5] -o $fa_transf -r Gauss[2,0] -t SyN[0.25] -i 30x99x11 --use-Histogram-Matching
-WarpImageMultiTransform 3 $fa $fa_transf -R $reference $warp $affine
+ANTS 3 -m CC["${reference}",$fa,1,5] -o "${fa_transf}" -r Gauss[2,0] -t SyN[0.25] -i 30x99x11 --use-Histogram-Matching
+WarpImageMultiTransform 3 "${fa}" "${fa_transf}" -R "${reference}" "${warp}" "${affine}"
 
 echo -e "\n## Applying inverse transformation to skeleton..."
-WarpImageMultiTransform 3 $sbj_sklt $sbj_sklt -i $affine $invwarp -R $reference --use-NN
+WarpImageMultiTransform 3 "${sbj_sklt}" "${sbj_sklt}" -i "${affine}" "${invwarp}" -R "${reference}" --use-NN
 
 echo -e "\n## Estimating snr..."
-estimatesnr -inputfile $Bfloat -schemefile $scheme -bgmask $sbj_sklt > $snr
+estimatesnr -inputfile "${Bfloat}" -schemefile "${scheme}" -bgmask "${sbj_sklt}" > "${snr}"
 
 echo -e "\nDONE camino"
 

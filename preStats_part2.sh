@@ -14,7 +14,7 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
-subjects=($(cat $scratch/list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 tbss_name=tbss_name
 FSLSTD=$FSLDIR/data/standard

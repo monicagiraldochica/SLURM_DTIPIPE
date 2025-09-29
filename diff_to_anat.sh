@@ -11,7 +11,7 @@ set -u
 STARTTIME=$(date +%s)
 
 scratch=scratch
-subjects=($(cat ${scratch}/list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 brain=surf/T1w_brain.nii.gz

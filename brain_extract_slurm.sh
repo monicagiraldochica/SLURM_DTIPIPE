@@ -17,7 +17,7 @@ module load freesurfer
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 echo "Running 3dmask on ${sbj}"
 
@@ -25,22 +25,22 @@ pid_array=()
 for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
 do
         prefix="${sbj}_3T_DWI_dir${ddir}"
-        [ ! -f $prefix.nii.gz ] && continue
-        echo $prefix
+        [ ! -f "${prefix}".nii.gz ] && continue
+        echo "${prefix}"
 
 	# Extract the first volume
-        fslroi $prefix ${prefix}_b0 0 -1 0 -1 0 -1 0 1
+        fslroi "${prefix}" "${prefix}_b0" 0 -1 0 -1 0 -1 0 1
 
         # Extract using FSL
-        bet ${prefix}_b0 ${prefix}_bet -f 0.1 -g 0 -n -m &
+        bet "${prefix}_b0" "${prefix}_bet" -f 0.1 -g 0 -n -m &
 	pid_array[${#pid_array[@]}]=$!
 
         # Extract using AFNI
-        3dSkullStrip -input ${prefix}_b0 -prefix ${prefix}_skstrip.nii.gz &
+        3dSkullStrip -input "${prefix}_b0" -prefix "${prefix}_skstrip".nii.gz &
 	pid_array[${#pid_array[@]}]=$!
 
         # Extract using Freesurfer
-        mri_synthstrip -i ${prefix}_b0.nii.gz -o ${prefix}_stripped.nii.gz &
+        mri_synthstrip -i "${prefix}_b0".nii.gz -o "${prefix}_stripped".nii.gz &
 	pid_array[${#pid_array[@]}]=$!
 done
 

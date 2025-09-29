@@ -12,7 +12,7 @@ pip3 install networkx
 
 projDir=/scratch/u/mkeith/iPadStudy
 cd $projDir
-SUBJECTS=($(cat sbj_list.txt))
+mapfile -t subjects < list.txt
 sbj=${SUBJECTS[PBS_ARRAYID-1]}
 
 echo "Running anat_graph on ${sbj}..."
