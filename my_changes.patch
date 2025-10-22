@@ -1,0 +1,55 @@
+diff --git a/brain_extract b/brain_extract
+old mode 100644
+new mode 100755
+index 34f093a..62a98cc
+--- a/brain_extract
++++ b/brain_extract
+@@ -1,4 +1,7 @@
+ #!/bin/bash
++# Author: Monica Keith
++# Description: Run brain extraction on MRI brain images
++
+ set -eo pipefail
+ shopt -s nullglob # makes globs expand to nothing if no match
+ 
+@@ -122,22 +125,25 @@ processNIFTI(){
+ 	# Mask brain
+ }
+ 
++parse_args() {
++	while getopts ":ht:i:p:edq" opt
++	do
++        	case $opt in
++                	h) printhelp;;
++                	t) tool=${OPTARG,,};; # Convert OPTARG to lower case
++                	i) input=$OPTARG;;
++                	p) num_prel=$OPTARG;;
++                	e) expand=1;;
++                	d) dilate=1;;
++                	q) qc=1;;
++                	\?) echo "Invalid option: -$OPTARG" >&2; exit 1;; # Handle invalid options
++                	:) echo "Option -$OPTARG requires an argument." >&2; exit 1;; # Handle missing arguments for options
++        	esac
++	done
++}
++
+ ## Main code
+-# Read arguments
+-while getopts ":ht:i:p:edq" opt
+-do
+-        case $opt in
+-                h) printhelp;;
+-                t) tool=${OPTARG,,};; # Convert OPTARG to lower case
+-                i) input=$OPTARG;;
+-                p) num_prel=$OPTARG;;
+-                e) expand=1;;
+-                d) dilate=1;;
+-                q) qc=1;;
+-                \?) echo "Invalid option: -$OPTARG" >&2; exit 1;; # Handle invalid options
+-                :) echo "Option -$OPTARG requires an argument." >&2; exit 1;; # Handle missing arguments for options
+-        esac
+-done
++parse_args "$@"
+ 
+ # Do checks
+ if [ "${input}" == "" ] || [ "${tool}" == "" ]; then
