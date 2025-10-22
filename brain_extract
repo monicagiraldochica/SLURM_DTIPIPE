@@ -1,4 +1,7 @@
 #!/bin/bash
+# Author: Monica Keith
+# Description: Run brain extraction on MRI brain images
+
 set -eo pipefail
 shopt -s nullglob # makes globs expand to nothing if no match
 
@@ -122,22 +125,26 @@ processNIFTI(){
 	# Mask brain
 }
 
+parse_args() {
+        while getopts ":ht:i:p:edq" opt
+        do
+                case $opt in
+                        h) printhelp;;
+                        t) tool=${OPTARG,,};; # Convert OPTARG to lower case
+                        i) input=$OPTARG;;
+                        p) num_proc=$OPTARG;;
+                        e) expand=1;;
+                        d) dilate=1;;
+                        q) qc=1;;
+                        \?) echo "Invalid option: -$OPTARG" >&2; exit 1;; # Handle invalid options
+                        :) echo "Option -$OPTARG requires an argument." >&2; exit 1;; # Handle missing arguments for options
+                esac
+        done
+}
+
 ## Main code
 # Read arguments
-while getopts ":ht:i:p:edq" opt
-do
-        case $opt in
-                h) printhelp;;
-                t) tool=${OPTARG,,};; # Convert OPTARG to lower case
-                i) input=$OPTARG;;
-                p) num_proc=$OPTARG;;
-                e) expand=1;;
-                d) dilate=1;;
-                q) qc=1;;
-                \?) echo "Invalid option: -$OPTARG" >&2; exit 1;; # Handle invalid options
-                :) echo "Option -$OPTARG requires an argument." >&2; exit 1;; # Handle missing arguments for options
-        esac
-done
+parse_args "$@"
 
 # Do checks
 if [ "$input" == "" ] || [ "$tool" == "" ]; then
@@ -167,8 +174,6 @@ then
         Number of parallel processes will be adjusted to ${#inputArray[@]}."
         num_proc=${#inputArray[@]}
 fi
-echo "Number of parallel processes: ${num_proc}"
-echo "Number of images: ${#inputArray[@]}"
 
 # Process each input file
 for inputfile in "${inputArray[@]}"; do
