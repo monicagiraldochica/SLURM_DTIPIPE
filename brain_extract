@@ -69,7 +69,7 @@ processNIFTI(){
         echo -e "\nProcessing ${inputfile}"
 
         # Check that it's not an empty string and the file exists
-        if [ -z $inputfile ] || [ ! -f $inputfile ]; then
+        if [ -z "$inputfile" ] || [ ! -f "$inputfile" ]; then
                 echo "${inputfile} not found" >&2
                 exit 1
         fi
@@ -167,6 +167,8 @@ then
         Number of parallel processes will be adjusted to ${#inputArray[@]}."
         num_proc=${#inputArray[@]}
 fi
+echo "Number of parallel processes: ${num_proc}"
+echo "Number of images: ${#inputArray[@]}"
 
 # Process each input file
 for inputfile in "${inputArray[@]}"; do
