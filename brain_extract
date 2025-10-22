@@ -82,19 +82,19 @@ processNIFTI(){
 
         # Get suffix & prefix
         [[ $inputfile == *.nii.gz ]] && suffix=".nii.gz" || suffix=".nii"
-        prefix=${inputfile%$suffix}
+        prefix=${inputfile%"$suffix"}
 
         # Pre-process 4D file if applicable
-        nvols=$(fslval $inputfile dim4)
+        nvols=$(fslval "$inputfile" dim4)
         nvols=${nvols/ /}
         echo "Input file has ${nvols} volumes"
-        if [ $nvols -gt 1 ];then
-                files=($prefix/vol????.nii.gz)
+        if [ "$nvols" -gt 1 ];then
+                files=("$prefix"/vol????.nii.gz)
                 nvsplit=${#files[@]}
-                if [ $nvsplit -gt $nvols ]; then
+                if [ "$nvsplit" -gt "$nvols" ]; then
                         echo "Splitting 4D file"
-                        mkdir -p $prefix
-                        fslsplit $inputfile $prefix/vol
+                        mkdir -p "$prefix"
+                        fslsplit "$inputfile" "$prefix"/vol
                 else
                         echo "4D is already split, skipping step"
 
@@ -130,7 +130,7 @@ do
                 h) printhelp;;
                 t) tool=${OPTARG,,};; # Convert OPTARG to lower case
                 i) input=$OPTARG;;
-                p) num_prel=$OPTARG;;
+                p) num_proc=$OPTARG;;
                 e) expand=1;;
                 d) dilate=1;;
                 q) qc=1;;
@@ -140,7 +140,7 @@ do
 done
 
 # Do checks
-if [ "${input}" == "" ] || [ "${tool}" == "" ]; then
+if [ "$input" == "" ] || [ "$tool" == "" ]; then
         echo -e "Missing mandatory flags.\n" >&2
         printhelp
 fi
@@ -158,6 +158,14 @@ elif [[ "$input" == *,* ]]; then
         IFS=',' read -r -a inputArray <<< "${input}"
 else
         inputArray=("${input}")
+fi
+
+# Correct the size of parallel processes if greater than the number of input files
+if [ "$num_proc" -gt "${#inputArray[@]}" ]
+then
+        echo -e "You requested to analyze ${num_proc} images in parallel, but there are only ${#inputArray[@]} images.\n \
+        Number of parallel processes will be adjusted to ${#inputArray[@]}."
+        num_proc=${#inputArray[@]}
 fi
 
 # Process each input file
