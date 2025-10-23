@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=7gb
 #SBATCH --gres=gpu:v100:1
 #SBATCH --partition=gpu
+
 set -e
 set -u
 STARTTIME=$(date +%s)

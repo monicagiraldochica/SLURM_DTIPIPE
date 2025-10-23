@@ -8,6 +8,7 @@
 #SBATCH --partition=bigmem
 #SBATCH --array=2-48%10
 #SBATCH --chdir=/scratch/g/mygroup/mydir
+
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -17,13 +18,13 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 outdir="${sbj}/${sess}"
 
 echo -e "Running thalamic tractography on ${sbj} ${sess}\n"
-cd $outdir
+cd "$outdir"
 
 REFERENCE=fa.nii.gz
 AFFINE=fa2tomAffine.txt
@@ -45,14 +46,12 @@ declare -A dic_transf=(["${ATLAS}"]="${SBJ_ATLAS}"
 			["${RGM}"]="${SBJ_RGM}"
 			["${LH}"]="${SBJ_LH}"
 			["${LGM}"]="${SBJ_LGM}")
-for orig in ${!dic_transf[@]}
-do
+for orig in "${!dic_transf[@]}"; do
 	target=${dic_transf[$orig]}
-	if [ ! -f $target ]
-	then
+	if [ ! -f "$target" ]; then
 		cmd="WarpImageMultiTransform 3 ${orig} ${target} -i ${AFFINE} ${INVWARP} -R ${REFERENCE} --use-NN"
-		echo $cmd
-		eval $cmd &
+		echo "$cmd"
+		eval "$cmd" &
 	fi
 done
 wait
@@ -76,28 +75,31 @@ then
 			     ["RightLateralPreFrontalThalamus"]="246")
 
 	for roi in "${!dic_vals[@]}"; do
-		IFS=',' read -a array <<< ${dic_vals[$roi]}
+		IFS=',' read -a -r array <<< "${dic_vals[$roi]}"
+
 		for val in "${array[@]}"; do
 			output="tmp${roi}_${val}.nii.gz"
+
 			if [ ! -f "${output}" ]; then
 				cmd="fslmaths ${SBJ_ATLAS} -thr ${val} -uthr ${val} ${output}"
-				echo $cmd
-				eval $cmd &
+				echo "$cmd"
+				eval "$cmd" &
 			fi
 		done
 	done
 	wait
 
 	for roi in "${!dic_vals[@]}"; do
-		if [ ! -f ${roi}.nii.gz ]; then
+		if [ ! -f "$roi".nii.gz ]; then
 			cmd="fslmaths"
-			for subroi in $(ls tmp${roi}*)
-			do
+
+			for subroi in tmp"$roi"*; do
 				cmd="${cmd} ${subroi} -add"
 			done
 			cmd="${cmd::-5} -bin ${roi}"
-			echo $cmd
-			eval $cmd &
+
+			echo "$cmd"
+			eval "$cmd" &
 		fi
 	done
 	wait
@@ -112,28 +114,26 @@ then
 		[[ $roi == Left* ]] && [[ $roi == *Thalamus ]] && Lcmd_thal="${Lcmd_thal} ${roi} -add"
 	        [[ $roi == Right* ]] && [[ $roi == *Thalamus ]] && Rcmd_thal="${Rcmd_thal} ${roi} -add"
 	done
+
 	Lcmd_cortex="${Lcmd_cortex::-5} -bin LeftPreFrontalCortex"
 	Rcmd_cortex="${Rcmd_cortex::-5} -bin RightPreFrontalCortex"
 	Lcmd_thal="${Lcmd_thal::-5} -bin LeftPreFrontalThalamus"
 	Rcmd_thal="${Rcmd_thal::-5} -bin RightPreFrontalThalamus"
-	for cmd in "${Lcmd_cortex}" "${Rcmd_cortex}" "${Lcmd_thal}" "${Rcmd_thal}"
-	do
-		IFS=' ' read -a array <<< "${cmd}"
+	for cmd in "$Lcmd_cortex" "$Rcmd_cortex" "$Lcmd_thal" "$Rcmd_thal"; do
+		IFS=' ' read -a -r array <<< "$cmd"
 		outroi="${array[-1]}.nii.gz"
-		[ ! -f $outroi ] && echo $cmd && eval $cmd &
+		[ ! -f "$outroi" ] && echo "$cmd" && eval "$cmd" &
 	done
 	wait
 fi
 
 # Create exclusion masks
-for roi in "LeftPreFrontalCortex" "RightPreFrontalCortex" "LeftAnteriorCingulate" "RightAnteriorCingulate" "LeftRegion2" "RightRegion2" "LeftRegion3" "RightRegion3" "LeftMiddleFrontal" "RightMiddleFrontal" "LeftSuperiorFrontal" "RightSuperiorFrontal"
-do
+for roi in "LeftPreFrontalCortex" "RightPreFrontalCortex" "LeftAnteriorCingulate" "RightAnteriorCingulate" "LeftRegion2" "RightRegion2" "LeftRegion3" "RightRegion3" "LeftMiddleFrontal" "RightMiddleFrontal" "LeftSuperiorFrontal" "RightSuperiorFrontal"; do
 	excl="${roi}_excl"
-	if [ ! -f $excl.nii.gz ]
-	then
+	if [ ! -f $excl.nii.gz ]; then
 		[[ $roi == Left* ]] && cmd="fslmaths RightHemisphere -add LeftGM -sub ${roi} -bin ${excl}" || cmd="fslmaths LeftHemisphere -add RightGM -sub ${roi} -bin ${excl}"
-		echo $cmd
-		eval $cmd &
+		echo "$cmd"
+		eval "$cmd" &
 	fi
 done
 wait

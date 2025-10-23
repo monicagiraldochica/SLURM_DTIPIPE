@@ -8,6 +8,7 @@
 #SBATCH --array=1-48%10
 #SBATCH --account=account
 #SBATCH --chdir=/scratch/g/mygroup/mydir
+
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -17,7 +18,7 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess=${sbj}_1
 echo "Running thalamic segmentation on ${sbj} ${sess}"
@@ -42,10 +43,8 @@ eval $cmd
 # Apply inverse transformation to each of the ROI
 declare -a roi_array=("Frontal" "Motor" "Somatosensory" "Occipital" "Parietal" "Temporal")
 
-for hem in "Left" "Right"
-do
-	for roi in ${roi_array[@]} "GM" "Hemisphere" "Tha_Thalamus"
-	do
+for hem in "Left" "Right"; do
+	for roi in "${roi_array[@]}" "GM" "Hemisphere" "Tha_Thalamus"; do
 		MASK="${hem}${roi}.nii.gz"
 		OUT_MASK="${outdir}/${MASK}"
 		cmd="WarpImageMultiTransform 3 ${MASK} ${OUT_MASK} -i ${AFFINE} ${INVWARP} -R ${REFERENCE} --use-NN"
@@ -57,10 +56,8 @@ done
 wait
 
 # Create the exclusion masks
-for hem in "Left" "Right"
-do
-        for roi in ${roi_array[@]}
-	do
+for hem in "Left" "Right"; do
+        for roi in "${roi_array[@]}"; do
 		[ "${hem}" == "Left" ] && avd_hem="Right" || avd_hem="Left"
 		gm="${hem}GM"
 		AVOID="${outdir}/${avd_hem}Hemisphere+${gm}-${roi}"
@@ -75,10 +72,8 @@ wait
 # Run tractography
 MERGED="${outdir}/data.bedpostX_v4/merged"
 MASK="${outdir}/nodif_brain_mask.nii.gz"
-for hem in "Left" "Right"
-do
-        for roi in ${roi_array[@]}
-        do
+for hem in "Left" "Right"; do
+        for roi in "${roi_array[@]}"; do
                 [ "${hem}" == "Left" ] && avd_hem="Right" || avd_hem="Left"
                 gm="${hem}GM"
                 AVOID="${outdir}/${avd_hem}Hemisphere+${gm}-${roi}"
@@ -87,35 +82,32 @@ do
 		output="${outdir}/${hem}Thal2${roi}"
 		cmd="probtrackx2 -x ${SEED} -l --modeuler --onewaycondition -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s ${MERGED} -m ${MASK} --dir=${output} --avoid=${AVOID} --stop=${TARGET} --os2t --targetmasks=${TARGET}"
 
-		echo $cmd
-		eval $cmd &
+		echo "$cmd"
+		eval "$cmd" &
 	done
 done
 wait
 
 # Segment the thalamus in 6 subregions per hemisphere according to its anatomical connectivity
 output="${outdir}/Biggest"
-mkdir $output
-for hem in "Left" "Right"
-do
+mkdir "$output"
+for hem in "Left" "Right"; do
         cmd="find_the_biggest"
-	for roi in ${roi_array[@]}
-	do
+	for roi in "${roi_array[@]}"; do
 		cmd="${cmd} ${outdir}/${hem}Thal2${roi}/seeds_to_${hem}${roi}"
 	done
 	cmd="${cmd} ${output}/${hem}"
-	echo $cmd
-	eval $cmd &
+
+	echo "$cmd"
+	eval "$cmd" &
 done
 wait
 
-for hem in "Left" "Right"
-do
-	for ((i=1; i<=6; i+=1))
-	do
+for hem in "Left" "Right"; do
+	for ((i=1; i<=6; i+=1)); do
 		cmd="fslmaths ${output}/${hem} -thr ${i} -uthr ${i} ${output}/${hem}_${roi_array[$i-1]}"
-		echo $cmd
-		eval $cmd &
+		echo "$cmd"
+		eval "$cmd" &
 	done
 done
 wait

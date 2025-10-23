@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --chdir=/scratch/g/mygroup/mydir/TBSS
+
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -27,7 +28,7 @@ img=FA
 # For two groups no need to use f-tests
 # -d: design matrix: each column contains a predictor
 echo "Running randomise ${img}"
-randomise -i all_${img}_skeletonised.nii.gz -o ttest -m mean_FA_skeleton_mask.nii.gz -d design.mat -t design.con -n 500 --T2
+randomise -i all_"$img"_skeletonised.nii.gz -o ttest -m mean_FA_skeleton_mask.nii.gz -d design.mat -t design.con -n 500 --T2
 echo "DONE randomise"
 
 # Compute execution time

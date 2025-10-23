@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --chdir=/scratch/g/mygroup/mydir/TBSS
+
 set -e
 set -u
 STARTTIME=$(date +%s)

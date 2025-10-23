@@ -6,6 +6,7 @@
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --array=1-48%10
 #SBATCH --account=account
+
 set -e
 set -u
 

@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=7gb
 #SBATCH --array=1-48%10
+
 set -e
 set -u
 STARTTIME=$(date +%s)

@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --chdir=/scratch/g/mygroup/mydir/TBSS
+
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -28,7 +29,7 @@ img=FA
 # -d: design matrix: each column contains a predictor
 # -f: F-test file: the f-tests are added on any contrasts that span the groups EVs to control for multiple tests. f-test is used to determine significance while t-contrast is used to determine directionality
 echo "Running randomise ${img}"
-randomise -i all_${img}_skeletonised.nii.gz -o ftest -m mean_FA_skeleton_mask.nii.gz -d design.mat -t design.con -f design.fts -n 500 --T2
+randomise -i all_"$img"_skeletonised.nii.gz -o ftest -m mean_FA_skeleton_mask.nii.gz -d design.mat -t design.con -f design.fts -n 500 --T2
 echo "DONE randomise"
 
 # Compute execution time

@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=10gb
 #SBATCH --partition=bigmem
 #SBATCH --array=1-48%10
+
 set -e
 set -u
 STARTTIME=$(date +%s)

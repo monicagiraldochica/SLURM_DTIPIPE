@@ -9,6 +9,7 @@
 #SBATCH --account=account
 #SBATCH --array=1-48%10
 #SBATCH --chdir=/scratch/g/mygroup/mydir
+
 set -e
 set -u
 STARTTIME=$(date +%s)

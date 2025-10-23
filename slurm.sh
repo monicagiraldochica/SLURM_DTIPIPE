@@ -15,6 +15,7 @@
 #SBATCH --nodelist=<names> # specific host names to include in job allocation
 #SBATCH --output=<name> # store job output
 #SBATCH --partition=normal
+
 set -e
 set -u
 STARTTIME=$(date +%s)

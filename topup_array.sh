@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --array=1-48%10
 #SBATCH --chdir=/scratch/g/mygroup/mydir
+
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -15,7 +16,7 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-subjects=($(cat list.txt))
+mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 topup_config_file="${FSLDIR}/etc/flirtsch/b02b0.cnf"
@@ -29,7 +30,7 @@ cd "${sbj}/${sess}/topup"
 # topup_Pos_Neg_b0_fieldcoef.nii.gz: contains spline coefficients defining the field
 # topup_Pos_Neg_b0_movpar.txt: each line contains the movement parameters for each volume of imain (4 lines if all series exist for the subject)
 echo -e "\n1. Run topup"
-topup --imain=Pos_Neg_b0 --datain=acqparams.txt --config=${topup_config_file} --out=topup_Pos_Neg_b0 -v
+topup --imain=Pos_Neg_b0 --datain=acqparams.txt --config="$topup_config_file" --out=topup_Pos_Neg_b0 -v
 
 # Apply topup to get a hifi b0 (used to create the nodif_brain_mask)
 # Only the first b0 of 75PA (positive) and the first b0 of 75AP (negative) is used
@@ -40,27 +41,27 @@ topup --imain=Pos_Neg_b0 --datain=acqparams.txt --config=${topup_config_file} --
 # the hifib0 output will have one volume and the size of the series
 echo -e "\n2. Define indices to apply topup"
 dimt=$(cat acqparams.txt | wc -l)
-if [ $dimt -eq 4 ]
+if [ "$dimt" -eq 4 ]
 then
 	echo "All series present"
 	index="1,3"
-elif [ $dimt -eq 2 ]
+elif [ "$dimt" -eq 2 ]
 then
 	echo "Two series present"
 	index="1,2"
-elif [ $dimt -eq 3 ] && [ ! -f AP_2.nii.gz ]
+elif [ "$dimt" -eq 3 ] && [ ! -f AP_2.nii.gz ]
 then
 	echo "Missing AP_2. Use 75 series."
 	index="1,3"
-elif [ $dimt -eq 3 ] && [ ! -f PA_2.nii.gz ]
+elif [ "$dimt" -eq 3 ] && [ ! -f PA_2.nii.gz ]
 then
 	echo "Missing PA_2. Use 75 series."
         index="1,2"
-elif [ $dimt -eq 3 ] && [ ! -f AP_1.nii.gz ]
+elif [ "$dimt" -eq 3 ] && [ ! -f AP_1.nii.gz ]
 then
         echo "Missing AP_1. Use 76 series."
 	index="2,3"
-elif [ $dimt -eq 3 ] && [ ! -f PA_1.nii.gz ]
+elif [ "$dimt" -eq 3 ] && [ ! -f PA_1.nii.gz ]
 then
         echo "Missing PA_1. Use 76 series"
 	index="1,3"
@@ -73,7 +74,7 @@ echo "Indices: ${index}"
 echo -e "\n3. Apply topup"
 fslroi Pos_b0 Pos_b01 0 1
 fslroi Neg_b0 Neg_b01 0 1
-applytopup --imain=Pos_b01,Neg_b01 --topup=topup_Pos_Neg_b0 --datain=acqparams.txt --inindex=$index --out=hifib0
+applytopup --imain=Pos_b01,Neg_b01 --topup=topup_Pos_Neg_b0 --datain=acqparams.txt --inindex="$index" --out=hifib0
 
 echo -e "\n4. Generate nodif brain mask"
 bet hifib0 nodif_brain -n -m -f 0.2
