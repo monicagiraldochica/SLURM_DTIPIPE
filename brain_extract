@@ -69,7 +69,7 @@ readInputListTXT(){
 processNIFTI(){
         local inputfile="$1"
 
-        echo -e "\nProcessing ${inputfile}"
+        echo "Processing ${inputfile}"
 
         # Check that it's not an empty string and the file exists
         if [ -z "$inputfile" ] || [ ! -f "$inputfile" ]; then
@@ -194,7 +194,7 @@ main(){
         # Correct the size of parallel processes if greater than the number of input files
         if [ "$num_proc" -gt "${#inputArray[@]}" ]; then
                 echo -e "You requested to analyze ${num_proc} images in parallel, but there are only ${#inputArray[@]} images.\n \
-                Number of parallel processes will be adjusted to ${#inputArray[@]}."
+                Number of parallel processes will be adjusted to ${#inputArray[@]}.\n"
                 num_proc=${#inputArray[@]}
         fi
 
