@@ -143,39 +143,43 @@ parse_args() {
 }
 
 ## Main code
-# Read arguments
-parse_args "$@"
+main(){
+        # Read arguments
+        parse_args "$@"
 
-# Do checks
-if [ "$input" == "" ] || [ "$tool" == "" ]; then
-        echo -e "Missing mandatory flags.\n" >&2
-        printhelp
-fi
+        # Do checks
+        if [ "$input" == "" ] || [ "$tool" == "" ]; then
+                echo -e "Missing mandatory flags.\n" >&2
+                printhelp
+        fi
 
-if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
-        echo -e "${tool} is not an acceptable tool for this script.\n" >&2
-        printhelp
-fi
+        if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
+                echo -e "${tool} is not an acceptable tool for this script.\n" >&2
+                printhelp
+        fi
 
-# Get the list of input files
-declare -a inputArray
-if [[ $input == *.txt ]]; then
-        readInputListTXT "${input}" inputArray
-elif [[ "$input" == *,* ]]; then
-        IFS=',' read -r -a inputArray <<< "${input}"
-else
-        inputArray=("${input}")
-fi
+        # Get the list of input files
+        declare -a inputArray
+        if [[ $input == *.txt ]]; then
+                readInputListTXT "${input}" inputArray
+        elif [[ "$input" == *,* ]]; then
+                IFS=',' read -r -a inputArray <<< "${input}"
+        else
+                inputArray=("${input}")
+        fi
 
-# Correct the size of parallel processes if greater than the number of input files
-if [ "$num_proc" -gt "${#inputArray[@]}" ]
-then
-        echo -e "You requested to analyze ${num_proc} images in parallel, but there are only ${#inputArray[@]} images.\n \
-        Number of parallel processes will be adjusted to ${#inputArray[@]}."
-        num_proc=${#inputArray[@]}
-fi
+        # Correct the size of parallel processes if greater than the number of input files
+        if [ "$num_proc" -gt "${#inputArray[@]}" ]
+        then
+                echo -e "You requested to analyze ${num_proc} images in parallel, but there are only ${#inputArray[@]} images.\n \
+                Number of parallel processes will be adjusted to ${#inputArray[@]}."
+                num_proc=${#inputArray[@]}
+        fi
 
-# Process each input file
-for inputfile in "${inputArray[@]}"; do
-        processNIFTI "${inputfile}"
-done
+        # Process each input file
+        for inputfile in "${inputArray[@]}"; do
+                processNIFTI "${inputfile}"
+        done
+}
+
+main "$@"
