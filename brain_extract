@@ -90,7 +90,7 @@ processNIFTI(){
         # Pre-process 4D file if applicable
         nvols=$(fslval "$inputfile" dim4)
         nvols=${nvols/ /}
-        echo "${inputfile} has ${nvols} volumes"
+        echo "${prefix} has ${nvols} volumes"
         if [ "$nvols" -gt 1 ];then
                 files=("$prefix"/vol????.nii.gz)
                 nvsplit=${#files[@]}
