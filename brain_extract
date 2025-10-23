@@ -203,8 +203,7 @@ main(){
         pids=()  # array to store background PIDs
         for inputfile in "${inputArray[@]}"; do
                 processNIFTI "${inputfile}" &
-                pid=$!
-                pids+=("$pid")
+                pids+=("$!")
 
                 # Limit the number of parallel jobs
                 while (( ${#pids[@]} >= num_proc )); do
