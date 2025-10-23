@@ -12,7 +12,7 @@ valid_tools=("fsl" "afni" "freesurfer" "all_any" "all_all")
 expand=0
 dilate=0
 qc=0
-num_prel=0
+num_proc=1
 
 ## Functions
 printhelp(){
