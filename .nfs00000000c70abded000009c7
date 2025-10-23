@@ -206,6 +206,14 @@ main(){
                 processNIFTI "${inputfile}" &
                 pids+=("$!")
 
+                # Limit the number of parallel jobs
+                #while (( ${#pids[@]} >= num_proc )); do
+                        # wait for the first job in the array
+                #        wait "${pids[0]}"
+                        # remove it from the array
+                #        pids=("${pids[@]:1}")
+                #done
+
                 # Limit number of parallel jobs
                 while (( ${#pids[@]} >= num_proc )); do
                         for i in "${!pids[@]}"; do
