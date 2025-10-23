@@ -206,11 +206,27 @@ main(){
                 pids+=("$!")
 
                 # Limit the number of parallel jobs
-                while (( ${#pids[@]} >= num_proc )); do
+                #while (( ${#pids[@]} >= num_proc )); do
                         # wait for the first job in the array
-                        wait "${pids[0]}"
+                #        wait "${pids[0]}"
                         # remove it from the array
-                        pids=("${pids[@]:1}")
+                #        pids=("${pids[@]:1}")
+                #done
+
+                # Limit number of parallel jobs
+                while (( ${#pids[@]} >= num_proc )); do
+                        for i in "${!pids[@]}"; do
+                                # Check if this PID is still alive
+                                if ! kill -0 "${pids[i]}" 2>/dev/null; then
+                                        wait "${pids[i]}" 2>/dev/null
+                                        unset 'pids[i]'   # Remove finished PID
+                                        break  # exit inner loop to continue adding new jobs
+                                fi
+                        done
+
+                        # Compact the array to remove gaps
+                        pids=("${pids[@]}")
+                        sleep 0.1  # small delay to avoid busy-wait
                 done
         done
 
