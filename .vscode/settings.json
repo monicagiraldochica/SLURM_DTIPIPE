@@ -47,6 +47,7 @@
         "nvsplit",
         "outputfile",
         "outputroot",
+        "pids",
         "prel",
         "printhelp",
         "repol",

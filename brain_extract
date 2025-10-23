@@ -199,20 +199,25 @@ main(){
         fi
 
         # Process each input file
-        running_jobs=0
+        pids=()  # array to store background PIDs
         for inputfile in "${inputArray[@]}"; do
                 processNIFTI "${inputfile}" &
-                ((running_jobs++))
+                pid=$!
+                pids+=("$pid")
 
-                # If we reached max parallel jobs, wait for any to finish
-                if (( running_jobs >= num_proc )); then
-                        wait -n  # Wait for one background job to finish
-                        ((running_jobs--))
-                fi
+                # Limit the number of parallel jobs
+                while (( ${#pids[@]} >= num_proc )); do
+                        # wait for the first job in the array
+                        wait "${pids[0]}"
+                        # remove it from the array
+                        pids=("${pids[@]:1}")
+                done
         done
 
-        # Wait for any remaining background jobs
-        wait
+        # Wait for remaining jobs
+        for pid in "${pids[@]}"; do
+        wait "$pid"
+        done
 }
 
 main "$@"
