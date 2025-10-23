@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Author: Monica Keith
 # Description: Run brain extraction on MRI brain images
 
@@ -148,13 +148,33 @@ main(){
         parse_args "$@"
 
         # Do checks
-        if [ "$input" == "" ] || [ "$tool" == "" ]; then
+        if [[ -z "$input" || -z "$tool" ]]; then
                 echo -e "Missing mandatory flags.\n" >&2
                 printhelp
         fi
 
-        if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "${tool}"; then
+        if ! printf '%s\0' "${valid_tools[@]}" | grep -Fxqz -- "$tool"; then
                 echo -e "${tool} is not an acceptable tool for this script.\n" >&2
+                printhelp
+        fi
+
+        test1=$(f"fslval -h")
+        test2=$(f"3dSkullStrip -h")
+        test3=$(f"mri_synthstrip -h")
+        if { [[ "$test1" == *"command not found"* ]] || \
+             [[ "$test2" == *"command not found"* ]] || \
+             [[ "$test3" == *"command not found"* ]]; } && \
+           { [[ "$tool" == "all_any" ]] || [[ "$tool" == "all_all" ]]; }; then
+                echo -e "One of the following tools is not installed or the module is not loaded: fsl, afni, freesurfer.\n" >&2
+                printhelp
+        elif [[ "$test1" == *"command not found"* && "$tool" == "fsl" ]]; then
+                echo -e "fsl is not installed or the module hasn't been loaded" >&2
+                printhelp
+        elif [[ "$test2" == *"command not found"* && "$tool" == "afni" ]]; then
+                echo -e "afni is not installed or the module hasn't been loaded" >&2
+                printhelp
+        elif [[ "$test3" == *"command not found"* && "$tool" == "freesurfer" ]]; then
+                echo -e "freesurfer is not installed or the module hasn't been loaded" >&2
                 printhelp
         fi
 
@@ -169,8 +189,7 @@ main(){
         fi
 
         # Correct the size of parallel processes if greater than the number of input files
-        if [ "$num_proc" -gt "${#inputArray[@]}" ]
-        then
+        if [ "$num_proc" -gt "${#inputArray[@]}" ]; then
                 echo -e "You requested to analyze ${num_proc} images in parallel, but there are only ${#inputArray[@]} images.\n \
                 Number of parallel processes will be adjusted to ${#inputArray[@]}."
                 num_proc=${#inputArray[@]}
