@@ -90,16 +90,16 @@ processNIFTI(){
         # Pre-process 4D file if applicable
         nvols=$(fslval "$inputfile" dim4)
         nvols=${nvols/ /}
-        echo "Input file has ${nvols} volumes"
+        echo "${inputfile} has ${nvols} volumes"
         if [ "$nvols" -gt 1 ];then
                 files=("$prefix"/vol????.nii.gz)
                 nvsplit=${#files[@]}
                 if [ "$nvsplit" -gt "$nvols" ]; then
-                        echo "Splitting 4D file"
+                        echo "[${prefix}] Splitting 4D file"
                         mkdir -p "$prefix"
                         fslsplit "$inputfile" "$prefix"/vol
                 else
-                        echo "4D is already split, skipping step"
+                        echo "[${prefix}] 4D is already split, skipping step"
 
                 fi
         fi
