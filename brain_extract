@@ -168,13 +168,16 @@ main(){
                 echo -e "One of the following tools is not installed or the module is not loaded: fsl, afni, freesurfer.\n" >&2
                 printhelp
         elif [[ "$test1" == *"command not found"* && "$tool" == "fsl" ]]; then
-                echo -e "fsl is not installed or the module hasn't been loaded" >&2
+                echo -e "fsl is not installed or the module hasn't been loaded.\n" >&2
                 printhelp
         elif [[ "$test2" == *"command not found"* && "$tool" == "afni" ]]; then
-                echo -e "afni is not installed or the module hasn't been loaded" >&2
+                echo -e "afni is not installed or the module hasn't been loaded.\n" >&2
                 printhelp
         elif [[ "$test3" == *"command not found"* && "$tool" == "freesurfer" ]]; then
-                echo -e "freesurfer is not installed or the module hasn't been loaded" >&2
+                echo -e "freesurfer is not installed or the module hasn't been loaded.\n" >&2
+                printhelp
+        elif [[ "$test1" == *"command not found"* && "$tool" != "fsl" ]]; then
+                echo -e "fsl is not installed or the module hasn't been loaded.\nEven if that's not the selected tool for the brain extraction, fsl is used in other parts of the program.\n" >&2
                 printhelp
         fi
 
