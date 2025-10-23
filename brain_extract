@@ -199,9 +199,20 @@ main(){
         fi
 
         # Process each input file
+        running_jobs=0
         for inputfile in "${inputArray[@]}"; do
-                processNIFTI "${inputfile}"
+                processNIFTI "${inputfile}" &
+                ((running_jobs++))
+
+                # If we reached max parallel jobs, wait for any to finish
+                if (( running_jobs >= num_proc )); then
+                        wait -n  # Wait for one background job to finish
+                        ((running_jobs--))
+                fi
         done
+
+        # Wait for any remaining background jobs
+        wait
 }
 
 main "$@"
