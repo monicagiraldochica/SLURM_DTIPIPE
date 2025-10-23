@@ -158,9 +158,9 @@ main(){
                 printhelp
         fi
 
-        test1=$("fslval -h")
-        test2=$("3dSkullStrip -h")
-        test3=$("mri_synthstrip -h")
+        test1=$(fslval -h)
+        test2=$(3dSkullStrip -h)
+        test3=$(mri_synthstrip -h)
         if { [[ "$test1" == *"command not found"* ]] || \
              [[ "$test2" == *"command not found"* ]] || \
              [[ "$test3" == *"command not found"* ]]; } && \
