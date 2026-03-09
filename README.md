@@ -8,7 +8,7 @@ The purpose of this repo is to keep your DTI workflow organized and provide read
 
 ## Repository Structure
 
-### **1. Standard terminal scripts**
+### 1. Standard terminal scripts
 These scripts run on any regular Linux/macOS terminal.
 
 They are typically used for:
@@ -22,9 +22,9 @@ Run them with:
 
 ```bash
 bash scriptname.sh
-``
+```
 
-### **2. SLURM batch scripts (_slurm)**
+### 2. SLURM batch scripts (_slurm)
 Scripts ending in _slurm are intended for HPC clusters that use the SLURM scheduler.
 
 These scripts include #SBATCH directives and are submitted with:
