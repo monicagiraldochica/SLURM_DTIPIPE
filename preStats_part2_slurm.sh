@@ -6,7 +6,6 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
-
 set -e
 set -u
 
@@ -15,9 +14,11 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
+cd "${scratch}/${sbj}/${sess}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-tbss_name=tbss_name
-FSLSTD=$FSLDIR/data/standard
+sess="${sbj}_1"
+echo "Running PreStats Part2 on ${sbj}: ${sess}"
 
-python3 preStatsPart2.py $tbss_name
+tbss_name=tbss_name
+python3 preStatsPart2.py ${tbss_name}

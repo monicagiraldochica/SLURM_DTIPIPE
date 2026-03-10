@@ -6,27 +6,28 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
-
 set -e
 set -u
 STARTTIME=$(date +%s)
 
 scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-brain=surf/T1w_brain.nii.gz
-data=data/data.nii.gz
-mask=data/nodif_brain_mask.nii.gz
-nodif_brain=data/nodif_brain.nii.gz
-
 echo "Running diff_to_anat on ${sbj}: ${sess}"
-cd "${scratch}/${sbj}/${sess}"
 
-fslmaths $data -mul $mask $nodif_brain
+maindir="${sbj}_${sess}"
+surf="${maindir}/surf"
+brain="${surf}"/T1w_brain.nii.gz
 
-flirt -in $nodif_brain -ref $brain -out surf/nodif_toAnat -omat surf/nodif_toAnat.mat -bins 256 -cost corratio -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -dof 12  -interp trilinear
+datadir="${maindir}/data"
+data="${datadir}"/data.nii.gz
+mask="${datadir}"/nodif_brain_mask.nii.gz
+nodif_brain="${datadir}"/nodif_brain.nii.gz
 
+fslmaths "${data}" -mul "${mask}" "${nodif_brain}"
+flirt -in "${nodif_brain}" -ref "${brain}" -out "${surf}"/nodif_toAnat -omat "${surf}"/nodif_toAnat.mat -bins 256 -cost corratio -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -dof 12  -interp trilinear
 echo "DONE diff_to_anat"
 
 # Compute execution time

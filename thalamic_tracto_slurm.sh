@@ -7,8 +7,6 @@
 #SBATCH --mem-per-cpu=25gb
 #SBATCH --partition=bigmem
 #SBATCH --array=2-48%10
-#SBATCH --chdir=/scratch/g/mygroup/mydir
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -18,13 +16,12 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
+scratch=scratch
+cd "${scratch}/${sbj}/${sess}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-outdir="${sbj}/${sess}"
-
-echo -e "Running thalamic tractography on ${sbj} ${sess}\n"
-cd "$outdir"
+echo "Running Thalamic Tractography on ${sbj}: ${sess}"
 
 REFERENCE=fa.nii.gz
 AFFINE=fa2tomAffine.txt

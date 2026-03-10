@@ -7,7 +7,6 @@
 #SBATCH --mem-per-cpu=5gb
 #SBATCH --array=1-48%10
 #SBATCH --chdir=/scratch/g/mygroup/mydir
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -16,12 +15,13 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
+scratch=scratch
+cd "${scratch}/${sbj}/${sess}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-topup_config_file="${FSLDIR}/etc/flirtsch/b02b0.cnf"
-
 echo "Running topup on ${sbj}: ${sess}"
+topup_config_file="${FSLDIR}/etc/flirtsch/b02b0.cnf"
 cd "${sbj}/${sess}/topup"
 
 # imain has the first b0 of each series (4 in total if all series exist for the subject)

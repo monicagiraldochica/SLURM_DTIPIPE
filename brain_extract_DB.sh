@@ -6,8 +6,6 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
-#SBATCH --chdir=/scratch/g/mygroup/mydir
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -17,15 +15,15 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-# Each line of list.txt is of the form sbj_sess
+scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
-sessdir=${subjects[SLURM_ARRAY_TASK_ID-1]}
-IFS='_' read -a info2 <<< "${sessdir}"
-sess=${info2[1]}
-echo "Running 3dmask on ${sess}"
+sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
+sess="${sbj}_1"
 
-python3 3dmask_DB_parallel.py "${sess}" "${sessdir}"
-echo "DONE 3dmask"
+echo "Running brain_extract on ${sbj}: ${sess}"
+python3 3dmask_DB_parallel.py "${sess}" "${sbj}_${sess}"
+echo "DONE brain_extract"
 
 # Compute execution time
 FINISHTIME=$(date +%s)

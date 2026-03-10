@@ -1,51 +1,35 @@
 #!/bin/bash
-#SBATCH --job-name=denoise
-#SBATCH --time=24:00:00
+#SBATCH --job-name=dtifitQC
+#SBATCH --time=00:05:00
 #SBATCH --account=account
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=10gb
-#SBATCH --partition=bigmem
+#SBATCH --mem-per-cpu=4gb
 #SBATCH --array=1-48%10
-
 set -e
 set -u
 STARTTIME=$(date +%s)
 
-module load ants
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
-sbj="${subjects[SLURM_ARRAY_TASK_ID-1]}"
+sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-echo "Running denoise on ${sbj}: ${sess}"
-cd "${scratch}/${sbj}/${sess}"
+echo "Running dtifitQC on ${sbj}: ${sess}"
 
-data=data/data.nii.gz
-output=data/data_ds.nii.gz
-mask=data/nodif_brain_mask.nii.gz
-mask4d=data/nodif_brain_mask_4d.nii.gz
-rm -rf $mask4d $output
-
-echo "generating 4d file"
-nvols=$(fslval $data dim4)
-cmd="fslmerge -tr ${mask4d}"
-for i in $(seq $nvols)
+for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
 do
-	cmd="${cmd} ${mask}"
+        prefix="${sbj}_${sess}/${sbj}_3T_DWI_dir${ddir}"
+        [ ! -f "${prefix}".nii.gz ] && continue
+        echo "${prefix}"
+        output="${sbj}_${sess}/dtifit/dti_${ddir}"
+        dtifit --data="${prefix}" --out="${output}" --mask="${prefix}_bet_mask" --bvecs="${prefix}.bvec" --bvals="${prefix}.bval"
 done
-eval $cmd
-
-echo "denoising image"
-DenoiseImage -d 4 -i $data -o $output -x $mask4d -v -r 1
-
-echo "masking result"
-fslmaths $output -mul $mask -thr 0.00001 $output
-
-echo -e "\nDONE denoise"
+echo "DONE dtifitQC"
 
 # Compute execution time
 FINISHTIME=$(date +%s)

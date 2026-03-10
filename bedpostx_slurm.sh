@@ -8,8 +8,6 @@
 #SBATCH --time=168:00:00
 #SBATCH --account=account
 #SBATCH --array=1-48%10
-#SBATCH --chdir=/scratch/g/mygroup/mydir
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -18,12 +16,14 @@ module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
+scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-cd "${sbj}"
+sess="${sbj}_1"
 
-echo "Running bedpostx on ${sbj}"
-bedpostx_gpu data
+echo "Running BedpostX on ${sbj}: ${sess}"
+bedpostx_gpu "${sbj}_${sess}/data"
 echo "DONE bedpostx"
 
 # Compute execution time

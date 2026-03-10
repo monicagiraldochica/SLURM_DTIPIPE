@@ -6,8 +6,6 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
-#SBATCH --chdir=/scratch/g/mygroup/mydir
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -18,9 +16,12 @@ module load freesurfer
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
+scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
-echo "Running 3dmask on ${sbj}"
+sess="${sbj}_1"
+echo "Running brain_extract on ${sbj}: ${sess}"
 
 pid_array=()
 for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
@@ -46,7 +47,7 @@ do
 done
 
 wait "${pid_array[@]}"
-echo "DONE 3dmask"
+echo "DONE brain_extract"
 
 # Compute execution time
 FINISHTIME=$(date +%s)

@@ -7,7 +7,6 @@
 #SBATCH --mem-per-cpu=7gb
 #SBATCH --gres=gpu:v100:1
 #SBATCH --partition=gpu
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -17,20 +16,22 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 module load readline/6.2.p5
 
-sbj=sbj
-sess=sess
-scratch=scratch/$sbj/$sess
-cd $scratch
+scratch=scratch
+cd "${scratch}"
+mapfile -t subjects < list.txt
+sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
+sess="${sbj}_1"
+echo "Running eddyCuda (with no TopUp) on ${sbj}: ${sess}"
 
-imain=eddy/Pos_Neg
-index=eddy/index.txt
-acqp=eddy/acqparams.txt
-bvecs=eddy/Pos_Neg.bvec
-bvals=eddy/Pos_Neg.bval
-out=eddy/eddy_unwarped_images
-mask=topup/nodif_brain_mask
+eddydir="${sbj}_${sess}/eddy"
+imain="${eddydir}"/Pos_Neg
+index="${eddydir}"/index.txt
+acqp="${eddydir}"/acqparams.txt
+bvecs="${eddydir}"/Pos_Neg.bvec
+bvals="${eddydir}"/Pos_Neg.bval
+out="${eddydir}"/eddy_unwarped_images
 
-echo "Running eddyCuda on ${sbj}: ${sess}"
+mask="${sbj}_${sess}"/topup/nodif_brain_mask
 
 # Create index file
 rm -f "${index}" "${acqp}"
@@ -42,7 +43,6 @@ echo "0 -1 0 .125970" >> $acqp
 
 # Run eddy
 eddy_cuda --imain="${imain}" --mask="${mask}" --index="${index}" --acqp="${acqp}" --bvecs="${bvecs}" --bvals="${bvals}" --out="${out}" --fwhm=10,8,6,4,2,0,0,0,0 --repol --resamp=jac --fep --ol_type=sw --mporder=12 --very_verbose --cnr_maps --niter=9 --ol_pos
-
 echo "DONE eddyCuda"
 
 # Compute execution time

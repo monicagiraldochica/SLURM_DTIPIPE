@@ -1,37 +1,37 @@
 #!/bin/bash
-#SBATCH --job-name=dtifitQC
+#SBATCH --job-name=finaldtifit
 #SBATCH --time=00:05:00
 #SBATCH --account=account
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=4gb
+#SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
-
+#SBATCH --partition=bigmem
 set -e
 set -u
 STARTTIME=$(date +%s)
 
+module load ants
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-echo "Running dtifitQC on ${sbj}: ${sess}"
-cd "${scratch}/${sbj}/${sess}"
-mkdir -p dtifit
+echo "Running final_dtifit on ${sbj}: ${sess}"
 
-for ddir in "75_AP" "75_PA" "76_AP" "76_PA"
-do
-        prefix="${sbj}_3T_DWI_dir${ddir}"
-        [ ! -f "${prefix}".nii.gz ] && continue
-        echo "${prefix}"
-        output="dtifit/dti_${ddir}"
-        dtifit --data="${prefix}" --out=$output --mask="${prefix}_bet_mask" --bvecs="${prefix}.bvec" --bvals="${prefix}.bval"
-done
-echo "DONE dtifitQC"
+datadir="${sbj}_${sess}/data"
+bvecs="${datadir}"/bvecs
+bvals="${datadir}"/bvals
+data="${datadir}"/data.nii.gz
+mask="${datadir}"/nodif_brain_mask.nii.gz
+diffDir="${datadir}"/dtifit
+
+dtifit --data="${data}" --out="${diffDir}"/dti --mask="${mask}" --bvecs="${bvecs}" --bvals="${bvals}" --wls
+echo -e "\nDONE finaldtifit"
 
 # Compute execution time
 FINISHTIME=$(date +%s)

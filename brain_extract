@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Author: Monica Keith
 # Description: Run brain extraction on MRI brain images
-
 set -eo pipefail
 shopt -s nullglob # makes globs expand to nothing if no match
 

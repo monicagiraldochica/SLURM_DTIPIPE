@@ -6,7 +6,6 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=7gb
 #SBATCH --array=1-48%10
-
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -15,19 +14,19 @@ module load freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-rundir="${scratch}/${sbj}/${sess}"
+echo "Running Freesurfer on ${sbj}: ${sess}"
 
-cd $rundir
-echo "Running freesuerfer on ${sbj}: ${sess}"
+recon-all -sd "${sbj}_${sess}" -s "${sess}" -i T1w_brain.nii.gz -noskullstrip -all
 
-recon-all -sd $rundir -s $sess -i T1w_brain.nii.gz -noskullstrip -all
-mris_convert surf/lh.pial surf/lh.pial.surf.gii &
-mris_convert surf/rh.pial surf/rh.pial.surf.gii &
-mris_convert surf/lh.smoothwm surf/lh.smoothwm.surf.gii &
-mris_convert surf/rh.smoothwm surf/rh.smoothwm.surf.gii
+surfdir="${sbj}_${sess}/surf"
+mris_convert "${surfdir}"/lh.pial "${surfdir}"/lh.pial.surf.gii &
+mris_convert "${surfdir}"/rh.pial "${surfdir}"/rh.pial.surf.gii &
+mris_convert "${surfdir}"/lh.smoothwm "${surfdir}"/lh.smoothwm.surf.gii &
+mris_convert "${surfdir}"/rh.smoothwm "${surfdir}"/rh.smoothwm.surf.gii
 
 echo "DONE freesurfer"
 

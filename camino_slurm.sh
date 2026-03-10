@@ -5,9 +5,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=10gb
-#SBATCH --array=1-48%10
 #SBATCH --partition=bigmem
-
+#SBATCH --array=1-48%10
 set -e
 set -u
 STARTTIME=$(date +%s)
@@ -18,35 +17,40 @@ PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
 scratch=scratch
+cd "${scratch}"
 mapfile -t subjects < list.txt
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
-skeleton="${FSLDIR}/data/standard/FMRIB58_FA-skeleton_1mm.nii.gz"
+echo "Running Camino on ${sbj}: ${sess}"
+
 reference="${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz"
-bvecs=data/bvecs
-bvals=data/bvals
-data=data/data.nii.gz
-mask=data/nodif_brain_mask.nii.gz
-diffDir=data/camino
-scheme=$diffDir/bvector.scheme
-Bfloat=$diffDir/dwi.Bfloat
-outDir=$diffDir/wlf
-Bdouble=$outDir/dt.Bdouble
-snr=$outDir/snr.txt
-fa=$outDir/fa.nii.gz
-ants=$outDir/ants
-affine=$ants/faAffine.txt
-warp=$ants/faWarp.nii.gz
-fa_transf=$ants/fa.nii.gz
-invwarp=$ants/faInverseWarp.nii.gz
-inverse=$ants/inverse
-sbj_sklt=$inverse/FMRIB58_FA-skeleton_1mm.nii.gz
 
-echo "Running 3dmask on ${sbj}: ${sess}"
-cd "${scratch}/${sbj}/${sess}"
+datadir="${sbj}_${sess}/data"
+bvecs="${datadir}"/bvecs
+bvals="${datadir}"/bvals
+data="${datadir}"/data.nii.gz
+mask="${datadir}"/nodif_brain_mask.nii.gz
 
-rm -rf $outDir $scheme "${Bfloat}"
-mkdir $outDir
+diffDir="${datadir}"/camino
+scheme="${diffDir}"/bvector.scheme
+Bfloat="${diffDir}"/dwi.Bfloat
+
+outDir="${diffDir}"/wlf
+mkdir -p "${outDir}"
+Bdouble="${outDir}"/dt.Bdouble
+snr="${outDir}"/snr.txt
+fa="${outDir}"/fa.nii.gz
+
+ants="${outDir}"/ants
+affine="${ants}"/faAffine.txt
+warp="${ants}"/faWarp.nii.gz
+fa_transf="${ants}"/fa.nii.gz
+invwarp="${ants}"/faInverseWarp.nii.gz
+
+inverse="${ants}"/inverse
+sbj_sklt="${inverse}"/FMRIB58_FA-skeleton_1mm.nii.gz
+
+rm -rf "${outDir}" "${scheme}" "${Bfloat}"
 
 echo "### Running camino (weighted linear fitting) on ${sbj}: ${sess}"
 
