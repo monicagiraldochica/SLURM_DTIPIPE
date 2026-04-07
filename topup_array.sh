@@ -9,15 +9,14 @@
 #SBATCH --chdir=/scratch/g/mygroup/mydir
 set -e
 set -u
-STARTTIME=$(date +%s)
+SECONDS=0
 
 module load fsl/6.0.4
 PATH=${FSLDIR}/bin:$PATH
 . ${FSLDIR}/etc/fslconf/fsl.sh
 
-scratch=scratch
-cd "${scratch}/${sbj}/${sess}"
 mapfile -t subjects < list.txt
+(( SLURM_ARRAY_TASK_ID <= ${#subjects[@]} )) || exit 0
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 echo "Running topup on ${sbj}: ${sess}"
@@ -81,13 +80,4 @@ bet hifib0 nodif_brain -n -m -f 0.2
 echo "DONE topup"
 
 # Compute execution time
-FINISHTIME=$(date +%s)
-TOTDURATION_S=$((FINISHTIME - STARTTIME))
-DURATION_H=$((TOTDURATION_S / 3600))
-REMAINDER_S=$((TOTDURATION_S - (3600*DURATION_H)))
-DURATION_M=$((REMAINDER_S / 60))
-DURATION_S=$((REMAINDER_S - (60*DURATION_M)))
-DUR_H=$(printf "%02d" ${DURATION_H})
-DUR_M=$(printf "%02d" ${DURATION_M})
-DUR_S=$(printf "%02d" ${DURATION_S})
-echo -e "\nTotal execution time was ${DUR_H} hrs ${DUR_M} mins ${DUR_S} secs"
+printf "\nTotal execution time: %02d:%02d:%02d (hh:mm:ss)\n" $((SECONDS/3600)) $((SECONDS/60%60)) $((SECONDS%60))

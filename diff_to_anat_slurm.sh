@@ -6,13 +6,13 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --array=1-48%10
+#SBATCH --chdir=/scratch/g/mygroup/mydir
 set -e
 set -u
-STARTTIME=$(date +%s)
+SECONDS=0
 
-scratch=scratch
-cd "${scratch}"
 mapfile -t subjects < list.txt
+(( SLURM_ARRAY_TASK_ID <= ${#subjects[@]} )) || exit 0
 sbj=${subjects[SLURM_ARRAY_TASK_ID-1]}
 sess="${sbj}_1"
 echo "Running diff_to_anat on ${sbj}: ${sess}"
@@ -31,13 +31,4 @@ flirt -in "${nodif_brain}" -ref "${brain}" -out "${surf}"/nodif_toAnat -omat "${
 echo "DONE diff_to_anat"
 
 # Compute execution time
-FINISHTIME=$(date +%s)
-TOTDURATION_S=$((FINISHTIME - STARTTIME))
-DURATION_H=$((TOTDURATION_S / 3600))
-REMAINDER_S=$((TOTDURATION_S - (3600*DURATION_H)))
-DURATION_M=$((REMAINDER_S / 60))
-DURATION_S=$((REMAINDER_S - (60*DURATION_M)))
-DUR_H=$(printf "%02d" ${DURATION_H})
-DUR_M=$(printf "%02d" ${DURATION_M})
-DUR_S=$(printf "%02d" ${DURATION_S})
-echo -e "\nTotal execution time was ${DUR_H} hrs ${DUR_M} mins ${DUR_S} secs"
+printf "\nTotal execution time: %02d:%02d:%02d (hh:mm:ss)\n" $((SECONDS/3600)) $((SECONDS/60%60)) $((SECONDS%60))
