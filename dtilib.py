@@ -38,7 +38,7 @@ def read_args():
     parser.add_argument("--afni", action="store_true", help="Use AFNI if available")
     parser.add_argument("--freesurfer", action="store_true", help="Use FreeSurfer if available")
 
-    parser.add_argument("--max-procs", type=int, default=0, help="Max number of simultaneous processes (0=unlimited)")
+    parser.add_argument("--max-procs", type=int, default=1, help="Max number of simultaneous processes (0=unlimited)")
 
     return parser.parse_args()
 
