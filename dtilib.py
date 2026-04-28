@@ -4,22 +4,9 @@ __author__ = "Monica Keith"
 import subprocess
 import os
 import argparse
-import multiprocessing
 
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-def runPipeline(commands: list):
-    for command in commands:
-        proc = runBashCommand(command)
-        out, err = proc.communicate()
-        if proc.returncode!=0:
-            raise RuntimeError(f"Output: {out}\nError: {err}")
-        
-def runPipelineParallel(target, *args):
-    p = multiprocessing.Process(target=target, args=args)
-    p.start()
-    return p
 
 def extractVolume(prefix: str, vol: int):
     return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
@@ -35,9 +22,8 @@ def brainExtract(prefix: str, *, run_all=False, fsl=False, afni=False, freesurfe
     if run_all or fsl:
         procs.append(runBashCommand(["bet", f"{prefix}_b0", f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
     if run_all or afni:
-        cmd1 = ["3dSkullStrip", "-input", f"{prefix}_b0", "-prefix", f"{prefix}_sklstrip.nii.gz"]
-        cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        procs.append(runPipelineParallel(runPipeline,[cmd1, cmd2]))
+        #cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
+        procs.append(runBashCommand(["3dSkullStrip", "-input", f"{prefix}_b0", "-prefix", f"{prefix}_sklstrip.nii.gz"]))
     if run_all or freesurfer:
         procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz"]))
     
@@ -57,34 +43,19 @@ def read_args():
 
     return parser.parse_args()
 
-def is_finished(p):
-    if isinstance(p, subprocess.Popen):
-        return p.poll() is not None
-    
-    return not p.is_alive()
-
-def wait(p):
-    if isinstance(p, subprocess.Popen):
-        stdout, stderr = p.communicate()
-        if p.returncode!=0:
-            print(f"Process failed (PID {p.pid})\nOutput: {stdout}\nError: {stderr}")
-
-    else:
-        p.join()
-
 def throttle(procs, max_procs):
     if max_procs<=0:
         return
     
     while len(procs)>=max_procs:
         for p in procs:
-            if is_finished(p):
-                wait(p)
+            if p.poll() is not None:
+                p.communicate()
                 procs.remove(p)
                 return
             
         # Nothing finished yet, block on the first one
-        wait(procs[0])
+        procs[0].communicate()
         procs.pop(0)
 
 def main():
@@ -105,7 +76,9 @@ def main():
 
         # Wait for all processes to finish
         for proc in procs:
-            wait(proc)
+            stdout, stderr = p.communicate()
+            if p.returncode!=0:
+                print(f"Process failed (PID {p.pid})\nOutput: {stdout}\nError: {stderr}")
 
 if __name__ == "__main__":
 	main()
