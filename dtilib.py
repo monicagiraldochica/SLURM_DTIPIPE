@@ -76,9 +76,9 @@ def main():
 
         # Wait for all processes to finish
         for proc in procs:
-            stdout, stderr = p.communicate()
-            if p.returncode!=0:
-                print(f"Process failed (PID {p.pid})\nOutput: {stdout}\nError: {stderr}")
+            stdout, stderr = proc.communicate()
+            if proc.returncode!=0:
+                print(f"Process failed (PID {proc.pid})\nOutput: {stdout}\nError: {stderr}")
 
 if __name__ == "__main__":
 	main()
