@@ -23,7 +23,7 @@ def brainExtract(prefix: str, *, run_all=False, fsl=False, afni=False, freesurfe
         procs.append(runBashCommand(["bet", f"{prefix}_b0", f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
     if run_all or afni:
         #cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        procs.append(runBashCommand(["3dSkullStrip", "-input", f"{prefix}_b0", "-prefix", f"{prefix}_sklstrip.nii.gz"]))
+        procs.append(runBashCommand(["3dSkullStrip", "-overwrite", "-input", f"{prefix}_b0.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]))
     if run_all or freesurfer:
         procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz"]))
     
@@ -50,12 +50,18 @@ def throttle(procs, max_procs):
     while len(procs)>=max_procs:
         for p in procs:
             if p.poll() is not None:
-                p.communicate()
+                stdout, stderr = p.communicate()
+                if p.returncode!=0:
+                    print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
+
                 procs.remove(p)
                 return
             
         # Nothing finished yet, block on the first one
-        procs[0].communicate()
+        p = procs[0]
+        stdout, stderr = p.communicate()
+        if p.returncode!=0:
+            print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
         procs.pop(0)
 
 def main():
@@ -78,7 +84,7 @@ def main():
         for proc in procs:
             stdout, stderr = proc.communicate()
             if proc.returncode!=0:
-                print(f"Process failed (PID {proc.pid})\nOutput: {stdout}\nError: {stderr}")
+                print(f"Process failed (PID {proc.pid})\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
 
 if __name__ == "__main__":
 	main()
