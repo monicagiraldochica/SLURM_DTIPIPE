@@ -12,8 +12,8 @@ env["OMP_NUM_THREADS"] = "1"
 env["MKL_NUM_THREADS"] = "1"
 env["OPENBLAS_NUM_THREADS"] = "1"
 
-def runBashCommand(command: list):
-    return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+def runBashCommand(command: list, run_shell: bool=False):
+    return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env, shell=run_shell)
 
 #######
 def runPipeline(commands: list):
@@ -41,7 +41,7 @@ def brainExtract2(prefix: str, *, run_all=False, fsl=False, afni=False, freesurf
     if run_all or afni:
         cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}_b0.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
         cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        procs.append(runBashCommand(cmd1+["&&"]+cmd2))
+        procs.append(runBashCommand(cmd1+["&&"]+cmd2, True))
     if run_all or freesurfer:
         procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz"]))
     
