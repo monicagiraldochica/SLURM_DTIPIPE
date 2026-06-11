@@ -90,6 +90,15 @@ def is_finished(p):
     
     return not p.is_alive()
 
+def wait(p):
+    if isinstance(p, subprocess.Popen):
+        stdout, stderr = p.communicate()
+        if p.returncode!=0:
+            print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
+
+    else:
+        p.join()
+
 def throttle(procs, max_procs):
     if max_procs<=0:
         return
@@ -97,18 +106,12 @@ def throttle(procs, max_procs):
     while len(procs)>=max_procs:
         for p in procs:
             if is_finished(p):
-                stdout, stderr = p.communicate()
-                if p.returncode!=0:
-                    print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
-
+                wait(p)
                 procs.remove(p)
                 return
             
         # Nothing finished yet, block on the first one
-        p = procs[0]
-        stdout, stderr = p.communicate()
-        if p.returncode!=0:
-            print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
+        wait(procs[0])
         procs.pop(0)
 
 def main():
