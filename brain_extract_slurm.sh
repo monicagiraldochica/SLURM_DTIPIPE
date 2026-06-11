@@ -14,8 +14,8 @@ SECONDS=0
 module load fsl/6.0.4
 module load afni
 module load freesurfer
-PATH=${FSLDIR}/bin:$PATH
-. ${FSLDIR}/etc/fslconf/fsl.sh
+#PATH=${FSLDIR}/bin:$PATH
+#. ${FSLDIR}/etc/fslconf/fsl.sh
 
 mapfile -t subjects < list.txt
 (( SLURM_ARRAY_TASK_ID <= ${#subjects[@]} )) || exit 0

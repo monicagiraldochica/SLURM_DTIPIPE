@@ -5,8 +5,14 @@ import subprocess
 import os
 import argparse
 
+# force each process to one thread
+env = os.environ.copy()
+env["OMP_NUM_THREADS"] = "1"
+env["MKL_NUM_THREADS"] = "1"
+env["OPENBLAS_NUM_THREADS"] = "1"
+
 def runBashCommand(command: list):
-    return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
 def extractVolume(prefix: str, vol: int):
     return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
