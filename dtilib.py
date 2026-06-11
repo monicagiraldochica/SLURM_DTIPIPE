@@ -84,7 +84,7 @@ def read_args():
 
     return parser.parse_args()
 
-def is_finished(p):
+def is_finished(p: subprocess.Popen | multiprocessing.Process):
     if isinstance(p, subprocess.Popen):
         return p.poll() is not None
     
