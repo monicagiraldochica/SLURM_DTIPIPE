@@ -124,7 +124,7 @@ def main():
         for brain in brains:
             if not os.path.isfile(brain):
                 continue
-            new_procs = brainExtract(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
+            new_procs = brainExtract2(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
 
             for p in new_procs:
                 throttle(procs, args.max_procs)
@@ -132,9 +132,7 @@ def main():
 
         # Wait for all processes to finish
         for proc in procs:
-            stdout, stderr = proc.communicate()
-            if proc.returncode!=0:
-                print(f"Process failed (PID {proc.pid})\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+            wait(proc)
 
 if __name__ == "__main__":
 	main()
