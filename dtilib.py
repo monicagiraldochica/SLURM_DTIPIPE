@@ -90,7 +90,7 @@ def is_finished(p: subprocess.Popen | multiprocessing.Process):
     
     return not p.is_alive()
 
-def wait(p):
+def wait(p: subprocess.Popen | multiprocessing.Process):
     if isinstance(p, subprocess.Popen):
         stdout, stderr = p.communicate()
         if p.returncode!=0:
