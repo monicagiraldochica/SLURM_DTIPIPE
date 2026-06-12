@@ -31,7 +31,7 @@ def extractVolume(prefix: str, vol: int):
     return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
 
 def getVols(nifti: str):
-    proc = runBashCommand(["fslval", nifti])
+    proc = runBashCommand(["fslval", nifti, "dim4"])
     stdout, stderr = proc.communicate()
     if proc.returncode!=0:
         print(f"ERROR: could not read the number of volumes.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
