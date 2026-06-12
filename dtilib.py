@@ -40,8 +40,7 @@ def brainExtract(prefix: str, *, run_all: bool=False, fsl: bool=False, afni: boo
     if run_all or afni:
         cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}_b0.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
         cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        commands = [cmd1, cmd2]
-        procs.append(runPipelineParallel(runPipeline, commands))
+        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
     if run_all or freesurfer:
         procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
     
