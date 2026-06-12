@@ -92,20 +92,6 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
     
     return procs
 
-def read_args():
-    parser = argparse.ArgumentParser(description="Diffusion Imaging pipeline")
-
-    parser.add_argument("--extract", type=str, help="Comma-separated list of NIFTI files to brain extract")
-
-    parser.add_argument("--all-soft", action="store_true", help="Use all available software")
-    parser.add_argument("--fsl", action="store_true", help="Use FSL if available")
-    parser.add_argument("--afni", action="store_true", help="Use AFNI if available")
-    parser.add_argument("--freesurfer", action="store_true", help="Use FreeSurfer if available")
-
-    parser.add_argument("--max-procs", type=int, default=1, help="Max number of simultaneous processes (0=unlimited)")
-
-    return parser.parse_args()
-
 def is_finished(p: subprocess.Popen | multiprocessing.Process):
     if isinstance(p, subprocess.Popen):
         return p.poll() is not None
@@ -136,6 +122,21 @@ def throttle(procs, max_procs):
         wait(procs[0])
         procs.pop(0)
 
+def read_args():
+    parser = argparse.ArgumentParser(description="Diffusion Imaging pipeline")
+
+    parser.add_argument("--extract", type=str, help="Comma-separated list of NIFTI files to brain extract")
+    parser.add_argument("--mask4D", action="store_true", help="Apply mask to each of the volumes in the 4D file")
+
+    parser.add_argument("--all-soft", action="store_true", help="Use all available software")
+    parser.add_argument("--fsl", action="store_true", help="Use FSL if available")
+    parser.add_argument("--afni", action="store_true", help="Use AFNI if available")
+    parser.add_argument("--freesurfer", action="store_true", help="Use FreeSurfer if available")
+
+    parser.add_argument("--max-procs", type=int, default=1, help="Max number of simultaneous processes (0=unlimited)")
+
+    return parser.parse_args()
+
 def main():
     args = read_args()
 
@@ -146,7 +147,7 @@ def main():
         for brain in brains:
             if not os.path.isfile(brain):
                 continue
-            new_procs = brainExtractNIFTI(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
+            new_procs = brainExtractNIFTI(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer, skip4Dmasking=(not args.mask4D))
 
             for p in new_procs:
                 throttle(procs, args.max_procs)
