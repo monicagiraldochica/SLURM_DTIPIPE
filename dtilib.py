@@ -87,7 +87,7 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
         if n_vols==1 or skip4Dmasking:
             procs.append(runBashCommand(cmd1))
         else:
-            cmd2 = ["mri_calc", "--in1", brain_path, "--in2", f"{prefix}_free_mask.nii.gz", "--mul", "--out", f"{orig_prefix}_free_mask.nii.gz"]
+            cmd2 = ["mri_mask", brain_path, f"{prefix}_free_mask.nii.gz", f"{orig_prefix}_free_mask.nii.gz"]
             procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
     
     return procs
