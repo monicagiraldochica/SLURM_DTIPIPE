@@ -51,27 +51,26 @@ def brainExtract(brain_path: str, *, run_all: bool=False, fsl: bool=False, afni:
     n_vols = getVols(f"{prefix}.nii.gz")
     if n_vols==0:
         return []
-    print(n_vols)
     
     # Extract first volume if it's 4D file
-    #if n_vols>1:        
-    #    proc = extractVolume(prefix, 0)
-    #    stdout, stderr = proc.communicate()
-    #    if proc.returncode!=0:
-    #        print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
-    #        return []
-    #    prefix = f"{prefix}_b0"
+    if n_vols>1:        
+        proc = extractVolume(prefix, 0)
+        stdout, stderr = proc.communicate()
+        if proc.returncode!=0:
+            print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+            return []
+        prefix = f"{prefix}_b0"
 
     # Create brain extract processes
     procs = []
-    #if run_all or fsl:
-    #    procs.append(runBashCommand(["bet", f"{prefix}_b0", f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
-    #if run_all or afni:
-    #    cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}_b0.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
-    #    cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-    #    procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
-    #if run_all or freesurfer:
-    #    procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
+    if run_all or fsl:
+        procs.append(runBashCommand(["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
+    if run_all or afni:
+        cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
+        cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
+        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+    if run_all or freesurfer:
+        procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
     
     return procs
 
