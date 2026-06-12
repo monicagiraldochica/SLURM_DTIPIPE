@@ -44,33 +44,51 @@ def getVols(nifti: str):
         print(f"ERROR: non-integer value from fslval: {out}")
         return 0
 
-def brainExtract(brain_path: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False):
-    prefix = brain_path.removesuffix(".nii.gz").removesuffix(".nii")
+def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False, skip4Dmasking: bool=True):
+    orig_prefix = brain_path.removesuffix(".nii.gz").removesuffix(".nii")
 
     # Get number of volumes
-    n_vols = getVols(f"{prefix}.nii.gz")
+    n_vols = getVols(f"{orig_prefix}.nii.gz")
     if n_vols==0:
         return []
     
     # Extract first volume if it's 4D file
     if n_vols>1:        
-        proc = extractVolume(prefix, 0)
+        proc = extractVolume(orig_prefix, 0)
         stdout, stderr = proc.communicate()
         if proc.returncode!=0:
             print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
             return []
-        prefix = f"{prefix}_b0"
+        prefix = f"{orig_prefix}_b0"
+    else:
+        prefix = orig_prefix
 
     # Create brain extract processes
     procs = []
     if run_all or fsl:
-        procs.append(runBashCommand(["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
+        cmd1 = ["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]
+        if n_vols==1 or skip4Dmasking:
+            procs.append(runBashCommand(cmd1))
+        else:
+            cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+
     if run_all or afni:
         cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
         cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+        cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "bin(b)*a", "-prefix", f"{orig_prefix}_sklstrip_mask.nii.gz"]
+        if n_vols==1 or skip4Dmasking:
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+        else:
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2, cmd3]))
+
     if run_all or freesurfer:
-        procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
+        cmd1 = ["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]
+        if n_vols==1 or skip4Dmasking:
+            procs.append(runBashCommand(cmd1))
+        else:
+            cmd2 = ["mri_calc", "--in1", brain_path, "--in2", f"{prefix}_free_mask.nii.gz", "--mul", "--out", f"{orig_prefix}_free_mask.nii.gz"]
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
     
     return procs
 
@@ -128,7 +146,7 @@ def main():
         for brain in brains:
             if not os.path.isfile(brain):
                 continue
-            new_procs = brainExtract(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
+            new_procs = brainExtractNIFTI(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
 
             for p in new_procs:
                 throttle(procs, args.max_procs)
