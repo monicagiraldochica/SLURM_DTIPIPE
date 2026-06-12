@@ -27,12 +27,30 @@ def runPipelineParallel(target, *args):
     p.start()
     return p
 
+def extractVolume(prefix: str, vol: int):
+    return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
+
+def getVols(nifti: str):
+    proc = runBashCommand(["fslval", nifti])
+    stdout, stderr = proc.communicate()
+    if proc.returncode!=0:
+        print(f"ERROR: could not read the number of volumes.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+        return 0
+    
+    out = stdout.strip()
+    try:
+        return int(out)
+    except ValueError:
+        print(f"ERROR: non-integer value from fslval: {out}")
+        return 0
+
 def brainExtract(prefix: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False):
     prefix = prefix.removesuffix(".nii.gz").removesuffix(".nii")
     proc = extractVolume(prefix, 0)
     stdout, stderr = proc.communicate()
     if proc.returncode!=0:
-        raise RuntimeError(f"fslroi failed.\nOutput: {stdout}\nError: {stderr}")
+        print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+        return []
 
     procs = []
     if run_all or fsl:
@@ -45,9 +63,6 @@ def brainExtract(prefix: str, *, run_all: bool=False, fsl: bool=False, afni: boo
         procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
     
     return procs
-
-def extractVolume(prefix: str, vol: int):
-    return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
 
 def read_args():
     parser = argparse.ArgumentParser(description="Diffusion Imaging pipeline")
