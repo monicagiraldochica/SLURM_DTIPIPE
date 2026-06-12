@@ -15,7 +15,6 @@ env["OPENBLAS_NUM_THREADS"] = "1"
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
-#######
 def runPipeline(commands: list):
     for command in commands:
         proc = runBashCommand(command)
@@ -28,7 +27,7 @@ def runPipelineParallel(target, *args):
     p.start()
     return p
 
-def brainExtract2(prefix: str, *, run_all=False, fsl=False, afni=False, freesurfer=False):
+def brainExtract(prefix: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False):
     prefix = prefix.removesuffix(".nii.gz").removesuffix(".nii")
     proc = extractVolume(prefix, 0)
     stdout, stderr = proc.communicate()
@@ -44,32 +43,12 @@ def brainExtract2(prefix: str, *, run_all=False, fsl=False, afni=False, freesurf
         commands = [cmd1, cmd2]
         procs.append(runPipelineParallel(runPipeline, commands))
     if run_all or freesurfer:
-        procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz"]))
+        procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]))
     
     return procs
-#######
 
 def extractVolume(prefix: str, vol: int):
     return runBashCommand(["fslroi", prefix, f"{prefix}_b0", "0", "-1", "0", "-1", "0", "-1", str(vol), "1"])
-
-# All parameters after * must be passed as keyword arguments
-def brainExtract(prefix: str, *, run_all=False, fsl=False, afni=False, freesurfer=False):
-    prefix = prefix.removesuffix(".nii.gz").removesuffix(".nii")
-    proc = extractVolume(prefix, 0)
-    stdout, stderr = proc.communicate()
-    if proc.returncode!=0:
-        raise RuntimeError(f"fslroi failed.\nOutput: {stdout}\nError: {stderr}")
-
-    procs = []
-    if run_all or fsl:
-        procs.append(runBashCommand(["bet", f"{prefix}_b0", f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
-    if run_all or afni:
-        #cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        procs.append(runBashCommand(["3dSkullStrip", "-overwrite", "-input", f"{prefix}_b0.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]))
-    if run_all or freesurfer:
-        procs.append(runBashCommand(["mri_synthstrip", "-i", f"{prefix}_b0.nii.gz", "-o", f"{prefix}_free.nii.gz"]))
-    
-    return procs
 
 def read_args():
     parser = argparse.ArgumentParser(description="Diffusion Imaging pipeline")
@@ -125,7 +104,7 @@ def main():
         for brain in brains:
             if not os.path.isfile(brain):
                 continue
-            new_procs = brainExtract2(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
+            new_procs = brainExtract(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer)
 
             for p in new_procs:
                 throttle(procs, args.max_procs)
