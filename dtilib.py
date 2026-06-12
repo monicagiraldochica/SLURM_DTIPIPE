@@ -44,14 +44,24 @@ def getVols(nifti: str):
         print(f"ERROR: non-integer value from fslval: {out}")
         return 0
 
-def brainExtract(prefix: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False):
-    prefix = prefix.removesuffix(".nii.gz").removesuffix(".nii")
-    proc = extractVolume(prefix, 0)
-    stdout, stderr = proc.communicate()
-    if proc.returncode!=0:
-        print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
-        return []
+def brainExtract(brain_path: str, *, run_all: bool=False, fsl: bool=False, afni: bool=False, freesurfer: bool=False):
+    prefix = brain_path.removesuffix(".nii.gz").removesuffix(".nii")
 
+    # Get number of volumes
+    n_vols = getVols(f"{prefix}.nii.gz")
+    if n_vols==0:
+        return []
+    
+    # Extract first volume if it's 4D file
+    if n_vols>1:        
+        proc = extractVolume(prefix, 0)
+        stdout, stderr = proc.communicate()
+        if proc.returncode!=0:
+            print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+            return []
+        prefix = f"{prefix}_b0"
+
+    # Create brain extract processes
     procs = []
     if run_all or fsl:
         procs.append(runBashCommand(["bet", f"{prefix}_b0", f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]))
