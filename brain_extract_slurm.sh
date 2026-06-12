@@ -32,7 +32,7 @@ done
 [ ${#files[@]} -eq 0 ] && exit 0
 
 echo "Running brain_extract on ${sbj}: ${sess}: $(IFS=,; echo "${files[*]}")"
-python3 dtilib.py --extract "$(IFS=,; echo "${files[*]}")" --all-soft --max-procs "${SLURM_CPUS_PER_TASK}"
+python3 dtilib.py --extract "$(IFS=,; echo "${files[*]}")" --all-soft --max-procs "${SLURM_CPUS_PER_TASK}" --mask4D
 
 # Compute execution time
 printf "\nTotal execution time: %02d:%02d:%02d (hh:mm:ss)\n" $((SECONDS/3600)) $((SECONDS/60%60)) $((SECONDS%60))

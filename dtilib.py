@@ -76,7 +76,7 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
     if run_all or afni:
         cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
         cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "bin(b)*a", "-prefix", f"{orig_prefix}_sklstrip_mask.nii.gz"]
+        cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "step(b)*a", "-prefix", f"{orig_prefix}_sklstrip_mask.nii.gz"]
         if n_vols==1 or skip4Dmasking:
             procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
         else:
