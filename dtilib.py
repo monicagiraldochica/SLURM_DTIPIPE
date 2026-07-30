@@ -5,8 +5,9 @@ import subprocess
 import os
 import argparse
 import multiprocessing
+import sys
 
-# force each process to one thread for a more efficient use of CPUs
+# Force each process to one thread for a more efficient use of CPUs
 env = os.environ.copy()
 env["OMP_NUM_THREADS"] = "1"
 env["MKL_NUM_THREADS"] = "1"
@@ -128,16 +129,31 @@ def read_args():
     parser.add_argument("--extract", type=str, help="Comma-separated list of NIFTI files to brain extract")
     parser.add_argument("--mask4D", action="store_true", help="Apply mask to each of the volumes in the 4D file")
 
-    parser.add_argument("--all-soft", action="store_true", help="Use all available software")
-    parser.add_argument("--fsl", action="store_true", help="Use FSL if available")
-    parser.add_argument("--afni", action="store_true", help="Use AFNI if available")
-    parser.add_argument("--freesurfer", action="store_true", help="Use FreeSurfer if available")
+    parser.add_argument("--all-soft", action="store_true", help="Use FSL, AFNI and FreeSurfer")
+    parser.add_argument("--fsl", action="store_true", help="Use FSL")
+    parser.add_argument("--afni", action="store_true", help="Use AFNI")
+    parser.add_argument("--freesurfer", action="store_true", help="Use FreeSurfer")
 
     parser.add_argument("--max-procs", type=int, default=1, help="Max number of simultaneous processes (0=unlimited)")
 
     return parser.parse_args()
 
+def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_vers: bool=False):
+    python_info = sys.version_info
+    major = python_info.major or 0
+    minor = python_info.minor or 0
+    micro = python_info.micro or 0
+    print(f"Python version: {major}.{minor}.{micro}")
+ 
+    if (not exact_vers) and (major<req_major or (major==req_major and minor<req_minor) or (major==req_major and minor==req_minor and micro<req_micro)):
+        return False, major, minor, micro
+    if exact_vers and (major!=req_major or minor!=req_minor or micro!=req_micro):
+        return False, major, minor, micro
+    return True, major, minor, micro
+
 def main():
+    checkPythonVers(3, 12, 10)
+
     args = read_args()
 
     if args.extract:
