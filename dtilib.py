@@ -176,7 +176,7 @@ def main():
         sys.exit(1)
     ml_list = stdout or stderr
 
-    mathes = []
+    matches = []
     for soft in "fsl/", "afni/", "freesurfer/":
         matches+=[re.search(r'fsl/\S+', ml_list)]
 
