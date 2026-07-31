@@ -164,7 +164,7 @@ def main():
     afni = args.afni
     freesurfer = args.freesurfer
     mask4D = args.mask4D
-    ml_list = runBashCommand(["bash", "-lc", "module list"])
+    ml_list = runBashCommand(["fslstats", "-h"])
     print(f"*{ml_list}*")
 
     #if all_soft or fsl:
