@@ -171,7 +171,6 @@ def main():
 
     matches = []
     for soft in "fsl/", "afni/", "freesurfer/":
-        print(f"\n{soft}:")
         match = re.search(rf'{re.escape(soft)}\S+', ml_list)
         if match:
             matches+=[match.group(0)]
