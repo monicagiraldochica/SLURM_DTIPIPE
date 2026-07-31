@@ -178,9 +178,14 @@ def main():
 
     matches = []
     for soft in "fsl/", "afni/", "freesurfer/":
-        matches+=[re.search(r'fsl/\S+', ml_list)]
+        print(f"\n{soft}:")
+        match = re.search(r'fsl/\S+', ml_list)
+        if match:
+            print(match.group(0))
+        else:
+            print("")
 
-    print(f"matches:{matches}*")
+    #print(f"matches:{matches}*")
 
     #if all_soft or fsl:
     #    print(f"fsl_vers: {fsl_vers}")
