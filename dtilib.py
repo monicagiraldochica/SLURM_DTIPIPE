@@ -175,6 +175,24 @@ def main():
     checkPythonVers(3, 12, 10)
 
     args = read_args()
+    all_soft = args.all_soft
+    fsl = args.fsl
+    afni = args.afni
+    freesurfer = args.freesurfer
+    mask4D = args.mask4D
+
+    if all_soft or fsl:
+        fsl_vers = runPipedCommands(["module list 2>&1", "grep -o fsl[^[:space:]]*'"])
+        print(f"fsl_vers: {fsl_vers}")
+
+    if all_soft or afni:
+        afni_vers = runPipedCommands(["module list 2>&1", "grep -o afni[^[:space:]]*'"])
+        print(f"afni_vers: {afni_vers}")
+
+    if all_soft or freesurfer:
+        freesurfer_vers = runPipedCommands(["module list 2>&1", "grep -o freesurfer[^[:space:]]*'"])
+        print(f"freesurfer_vers: {freesurfer_vers}")
+    sys.exit
 
     if args.extract:
         brains = [b.strip() for b in args.extract.split(",") if b.strip()]
@@ -183,7 +201,7 @@ def main():
         for brain in brains:
             if not os.path.isfile(brain):
                 continue
-            new_procs = brainExtractNIFTI(brain, run_all=args.all_soft, fsl=args.fsl, afni=args.afni, freesurfer=args.freesurfer, skip4Dmasking=(not args.mask4D))
+            new_procs = brainExtractNIFTI(brain, run_all=all_soft, fsl=fsl, afni=afni, freesurfer=freesurfer, skip4Dmasking=(not mask4D))
 
             for p in new_procs:
                 throttle(procs, args.max_procs)
