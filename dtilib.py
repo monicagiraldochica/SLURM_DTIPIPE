@@ -3,6 +3,7 @@ __author__ = "Monica Keith"
 __status__ = "Development"
 __purpose__ = "Analyze DTI data"
 
+# check python version
 import sys
 python_info = sys.version_info
 major = python_info.major or 0
@@ -24,19 +25,6 @@ env = os.environ.copy()
 env["OMP_NUM_THREADS"] = "1"
 env["MKL_NUM_THREADS"] = "1"
 env["OPENBLAS_NUM_THREADS"] = "1"
-
-#def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_vers: bool=False):
-#    python_info = sys.version_info
-#    major = python_info.major or 0
-#    minor = python_info.minor or 0
-#    micro = python_info.micro or 0
-#    print(f"Python version: {major}.{minor}.{micro}")
- 
-#    if (not exact_vers) and (major<req_major or (major==req_major and minor<req_minor) or (major==req_major and minor==req_minor and micro<req_micro)):
-#        return False, major, minor, micro
-#    if exact_vers and (major!=req_major or minor!=req_minor or micro!=req_micro):
-#        return False, major, minor, micro
-#    return True, major, minor, micro
 
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
@@ -190,7 +178,7 @@ def main():
         print(f"\n{soft}:")
         match = re.search(rf'{re.escape(soft)}\S+', ml_list)
         if match:
-            print(match.group(0))
+            print("*"+match.group(0)+"*")
         else:
             print("")
 
