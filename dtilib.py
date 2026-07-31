@@ -164,8 +164,11 @@ def main():
     afni = args.afni
     freesurfer = args.freesurfer
     mask4D = args.mask4D
-    ml_list = runBashCommand(["fslstats", "-h"])
-    print(f"*{ml_list}*")
+
+    print(getVols("/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_AP.nii.gz"))
+
+    #ml_list = runBashCommand(["fslstats", "-h"])
+    #print(f"*{ml_list}*")
 
     #if all_soft or fsl:
     #    print(f"fsl_vers: {fsl_vers}")
@@ -175,7 +178,7 @@ def main():
 
     #if all_soft or freesurfer:\
     #    print(f"freesurfer_vers: {freesurfer_vers}")
-    sys.exit
+    sys.exit(0)
 
     if args.extract:
         brains = [b.strip() for b in args.extract.split(",") if b.strip()]
