@@ -16,6 +16,24 @@ env["OPENBLAS_NUM_THREADS"] = "1"
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
+def runPipedCommands(commands: list[list]):
+    try:
+        prev_proc = None
+        for cmd in commands:
+            if prev_proc is None:
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            else:
+                p = subprocess.Popen(cmd, stdin=prev_proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                prev_proc.stdout.close()
+            prev_proc = p
+
+        stdout, stderr = prev_proc.communicate()
+        return prev_proc.returncode, stderr, stdout
+
+    except Exception as e:
+        err = (e.stderr or e.stdout or str(e)).strip()
+        return e.returncode, err, ""
+
 def runPipeline(commands: list):
     for command in commands:
         proc = runBashCommand(command)
