@@ -182,17 +182,33 @@ def main():
         else:
             matches+=[""]
 
-    print(f"matches:{matches}*")
+    ml_ok = True
+    if all_soft or fsl:
+        fsl_vers = matches[0]
+        if fsl_vers=="":
+            print("ERROR: fsl module not loaded")
+            ml_ok = False
+        else:
+            print(f"fsl_vers: {fsl_vers}")
 
-    #if all_soft or fsl:
-    #    print(f"fsl_vers: {fsl_vers}")
+    if all_soft or afni:
+        afni_vers = matches[0]
+        if afni_vers=="":
+            print("ERROR: afni module not loaded")
+            ml_ok = False
+        else:
+            print(f"afni_vers: {afni_vers}")
 
-    #if all_soft or afni:
-    #    print(f"afni_vers: {afni_vers}")
+    if all_soft or freesurfer:
+        free_vers = matches[0]
+        if free_vers=="":
+            print("ERROR: freesurfer module not loaded")
+            ml_ok = False
+        else:
+            print(f"free_vers: {free_vers}")
 
-    #if all_soft or freesurfer:\
-    #    print(f"freesurfer_vers: {freesurfer_vers}")
-    sys.exit(0)
+    if not ml_ok:
+        sys.exit(1)
 
     if args.extract:
         brains = [b.strip() for b in args.extract.split(",") if b.strip()]
