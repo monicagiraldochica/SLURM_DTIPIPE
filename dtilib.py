@@ -3,11 +3,20 @@ __author__ = "Monica Keith"
 __status__ = "Development"
 __purpose__ = "Analyze DTI data"
 
+import sys
+python_info = sys.version_info
+major = python_info.major or 0
+minor = python_info.minor or 0
+micro = python_info.micro or 0
+print(f"Python version: {major}.{minor}.{micro}")
+if major!=3 or minor!=12 or micro!=10:
+    print("ERROR: This program needs python/3.12.10")
+    sys.exit(1)
+
 import subprocess
 import os
 import argparse
 import multiprocessing
-import sys
 import re
 
 # Force each process to one thread for a more efficient use of CPUs
@@ -15,6 +24,19 @@ env = os.environ.copy()
 env["OMP_NUM_THREADS"] = "1"
 env["MKL_NUM_THREADS"] = "1"
 env["OPENBLAS_NUM_THREADS"] = "1"
+
+#def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_vers: bool=False):
+#    python_info = sys.version_info
+#    major = python_info.major or 0
+#    minor = python_info.minor or 0
+#    micro = python_info.micro or 0
+#    print(f"Python version: {major}.{minor}.{micro}")
+ 
+#    if (not exact_vers) and (major<req_major or (major==req_major and minor<req_minor) or (major==req_major and minor==req_minor and micro<req_micro)):
+#        return False, major, minor, micro
+#    if exact_vers and (major!=req_major or minor!=req_minor or micro!=req_micro):
+#        return False, major, minor, micro
+#    return True, major, minor, micro
 
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
@@ -141,23 +163,10 @@ def read_args():
 
     return parser.parse_args()
 
-def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_vers: bool=False):
-    python_info = sys.version_info
-    major = python_info.major or 0
-    minor = python_info.minor or 0
-    micro = python_info.micro or 0
-    print(f"Python version: {major}.{minor}.{micro}")
- 
-    if (not exact_vers) and (major<req_major or (major==req_major and minor<req_minor) or (major==req_major and minor==req_minor and micro<req_micro)):
-        return False, major, minor, micro
-    if exact_vers and (major!=req_major or minor!=req_minor or micro!=req_micro):
-        return False, major, minor, micro
-    return True, major, minor, micro
-
 def main():
-    if not checkPythonVers(3, 12, 10)[0]:
-        print("ERROR: This program needs python/3.12.10")
-        sys.exit(1)
+    #if not checkPythonVers(3, 12, 10)[0]:
+    #    print("ERROR: This program needs python/3.12.10")
+    #    sys.exit(1)
 
     # Read arguments
     args = read_args()
