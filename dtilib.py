@@ -170,6 +170,7 @@ def main():
     stdout, stderr = proc.communicate()
     print(f"stdout:{stdout}*")
     print(f"stderr:{stderr}*")
+    print(f"code:{proc.returncode}*")
 
     #ml_list = runBashCommand(["fslstats", "-h"])
     #print(f"*{ml_list}*")
