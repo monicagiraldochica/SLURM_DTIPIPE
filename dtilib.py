@@ -178,11 +178,11 @@ def main():
         print(f"\n{soft}:")
         match = re.search(rf'{re.escape(soft)}\S+', ml_list)
         if match:
-            print("*"+match.group(0)+"*")
+            matches+=[match.group(0)]
         else:
-            print("")
+            matches+=[""]
 
-    #print(f"matches:{matches}*")
+    print(f"matches:{matches}*")
 
     #if all_soft or fsl:
     #    print(f"fsl_vers: {fsl_vers}")
