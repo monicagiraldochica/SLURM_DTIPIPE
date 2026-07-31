@@ -154,10 +154,11 @@ def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_
     return True, major, minor, micro
 
 def main():
-    #if not checkPythonVers(3, 12, 10)[0]:
-    #    print("ERROR: This program needs python/3.12.10")
-    #    sys.exit(1)
+    if not checkPythonVers(3, 12, 10)[0]:
+        print("ERROR: This program needs python/3.12.10")
+        sys.exit(1)
 
+    # Read arguments
     args = read_args()
     all_soft = args.all_soft
     fsl = args.fsl
@@ -165,12 +166,15 @@ def main():
     freesurfer = args.freesurfer
     mask4D = args.mask4D
 
-    print(getVols("/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_AP.nii.gz"))
+    # Check that the required modules are loaded
     proc = runBashCommand(["bash", "-lc", "module list"])
     stdout, stderr = proc.communicate()
-    print(f"stdout:{stdout}*")
-    print(f"stderr:{stderr}*")
-    print(f"code:{proc.returncode}*")
+    if proc.returncode!=0:
+        err = stderr or stdout
+        print(f"ERROR: Could not check that the required modules are loaded: {err}.")
+        sys.exit(1)
+    ml_list = stdout or stderr
+    print(f"ml_list:{ml_list}*")
 
     #ml_list = runBashCommand(["fslstats", "-h"])
     #print(f"*{ml_list}*")
