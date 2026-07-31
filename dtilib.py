@@ -8,6 +8,7 @@ import os
 import argparse
 import multiprocessing
 import sys
+import re
 
 # Force each process to one thread for a more efficient use of CPUs
 env = os.environ.copy()
@@ -174,10 +175,12 @@ def main():
         print(f"ERROR: Could not check that the required modules are loaded: {err}.")
         sys.exit(1)
     ml_list = stdout or stderr
-    print(f"ml_list:{ml_list}*")
 
-    #ml_list = runBashCommand(["fslstats", "-h"])
-    #print(f"*{ml_list}*")
+    mathes = []
+    for soft in "fsl/", "afni/", "freesurfer/":
+        matches+=[re.search(r'fsl/\S+', ml_list)]
+
+    print(f"matches:{matches}*")
 
     #if all_soft or fsl:
     #    print(f"fsl_vers: {fsl_vers}")
