@@ -14,6 +14,7 @@ env = os.environ.copy()
 env["OMP_NUM_THREADS"] = "1"
 env["MKL_NUM_THREADS"] = "1"
 env["OPENBLAS_NUM_THREADS"] = "1"
+env["LMOD_CMD"] = "/hpc/apps/lmod/9.0.4/libexec/lmod"
 
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
@@ -166,6 +167,10 @@ def main():
     mask4D = args.mask4D
 
     print(getVols("/scratch/g/rccadmin/mkeith/niftis/EC1113_3T_DWI_dir76_AP.nii.gz"))
+    proc = runBashCommand(["module", "list"])
+    stdout, stderr = proc.communicate()
+    print(f"stdout:{stdout}*")
+    print(f"stderr:{stderr}*")
 
     #ml_list = runBashCommand(["fslstats", "-h"])
     #print(f"*{ml_list}*")
