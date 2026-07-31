@@ -18,24 +18,6 @@ env["OPENBLAS_NUM_THREADS"] = "1"
 def runBashCommand(command: list):
     return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
-def runPipedCommands(commands: list[list]):
-    try:
-        prev_proc = None
-        for cmd in commands:
-            if prev_proc is None:
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            else:
-                p = subprocess.Popen(cmd, stdin=prev_proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                prev_proc.stdout.close()
-            prev_proc = p
-
-        stdout, stderr = prev_proc.communicate()
-        return prev_proc.returncode, stderr, stdout
-
-    except Exception as e:
-        err = (e.stderr or e.stdout or str(e)).strip()
-        return e.returncode, err, ""
-
 def runPipeline(commands: list):
     for command in commands:
         proc = runBashCommand(command)
@@ -182,18 +164,17 @@ def main():
     afni = args.afni
     freesurfer = args.freesurfer
     mask4D = args.mask4D
+    ml_list = runBashCommand(["module", "list"])
+    print(f"*{ml_list}*")
 
-    if all_soft or fsl:
-        fsl_vers = runPipedCommands(["module list 2>&1", "grep -o fsl[^[:space:]]*'"])
-        print(f"fsl_vers: {fsl_vers}")
+    #if all_soft or fsl:
+    #    print(f"fsl_vers: {fsl_vers}")
 
-    if all_soft or afni:
-        afni_vers = runPipedCommands(["module list 2>&1", "grep -o afni[^[:space:]]*'"])
-        print(f"afni_vers: {afni_vers}")
+    #if all_soft or afni:
+    #    print(f"afni_vers: {afni_vers}")
 
-    if all_soft or freesurfer:
-        freesurfer_vers = runPipedCommands(["module list 2>&1", "grep -o freesurfer[^[:space:]]*'"])
-        print(f"freesurfer_vers: {freesurfer_vers}")
+    #if all_soft or freesurfer:\
+    #    print(f"freesurfer_vers: {freesurfer_vers}")
     sys.exit
 
     if args.extract:
