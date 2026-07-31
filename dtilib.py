@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 __author__ = "Monica Keith"
+__status__ = "Development"
+__purpose__ = "Analyze DTI data"
 
 import subprocess
 import os
