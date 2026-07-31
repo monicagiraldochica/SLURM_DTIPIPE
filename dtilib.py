@@ -154,9 +154,9 @@ def checkPythonVers(req_major: int=0, req_minor: int=0, req_micro: int=0, exact_
     return True, major, minor, micro
 
 def main():
-    if not checkPythonVers(3, 12, 10)[0]:
-        print("ERROR: This program needs python/3.12.10")
-        sys.exit(1)
+    #if not checkPythonVers(3, 12, 10)[0]:
+    #    print("ERROR: This program needs python/3.12.10")
+    #    sys.exit(1)
 
     args = read_args()
     all_soft = args.all_soft
