@@ -152,10 +152,6 @@ def read_args():
     return parser.parse_args()
 
 def main():
-    #if not checkPythonVers(3, 12, 10)[0]:
-    #    print("ERROR: This program needs python/3.12.10")
-    #    sys.exit(1)
-
     # Read arguments
     args = read_args()
     all_soft = args.all_soft
@@ -185,23 +181,23 @@ def main():
     ml_ok = True
     if all_soft or fsl:
         fsl_vers = matches[0]
-        if fsl_vers=="":
+        if not fsl_vers:
             print("ERROR: fsl module not loaded")
             ml_ok = False
         else:
             print(f"fsl_vers: {fsl_vers}")
 
     if all_soft or afni:
-        afni_vers = matches[0]
-        if afni_vers=="":
+        afni_vers = matches[1]
+        if not afni_vers:
             print("ERROR: afni module not loaded")
             ml_ok = False
         else:
             print(f"afni_vers: {afni_vers}")
 
     if all_soft or freesurfer:
-        free_vers = matches[0]
-        if free_vers=="":
+        free_vers = matches[2]
+        if not free_vers:
             print("ERROR: freesurfer module not loaded")
             ml_ok = False
         else:
