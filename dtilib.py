@@ -19,6 +19,7 @@ import os
 import argparse
 import multiprocessing
 import re
+from textwrap import dedent
 
 # Force each process to one thread for a more efficient use of CPUs
 env = os.environ.copy()
@@ -34,7 +35,14 @@ def runPipeline(commands: list):
         proc = runBashCommand(command)
         out, err = proc.communicate()
         if proc.returncode!=0:
-            print(f"Process failed (PID {proc.pid})\nCommand: {proc.args}\nOutput: {out}\nError: {err}")
+            print(dedent(f"""
+            ---------------------------------
+            Process failed (PID {proc.pid})
+            Command: {proc.args}
+            Output: {out}
+            Error: {err}
+            ---------------------------------
+            """))
 
 def runPipelineParallel(target, *args):
     p = multiprocessing.Process(target=target, args=args)
@@ -48,7 +56,14 @@ def getVols(nifti: str):
     proc = runBashCommand(["fslval", nifti, "dim4"])
     stdout, stderr = proc.communicate()
     if proc.returncode!=0:
-        print(f"ERROR: could not read the number of volumes.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+        print(dedent(f"""
+        ---------------------------------
+        ERROR: could not read the number of volumes.
+        Command: {proc.args}
+        Output: {stdout}
+        Error: {stderr}
+        ---------------------------------
+        """))
         return 0
     
     out = stdout.strip()
@@ -71,7 +86,14 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
         proc = extractVolume(orig_prefix, 0)
         stdout, stderr = proc.communicate()
         if proc.returncode!=0:
-            print(f"ERROR: fslroi failed, could not brain extract.\nCommand: {proc.args}\nOutput: {stdout}\nError: {stderr}")
+            print(dedent(f"""
+            ---------------------------------
+            ERROR: fslroi failed, could not brain extract.
+            Command: {proc.args}
+            Output: {stdout}
+            Error: {stderr}
+            ---------------------------------
+            """))
             return []
         prefix = f"{orig_prefix}_b0"
     else:
@@ -116,7 +138,14 @@ def wait(p: subprocess.Popen | multiprocessing.Process):
     if isinstance(p, subprocess.Popen):
         stdout, stderr = p.communicate()
         if p.returncode!=0:
-            print(f"Process failed (PID {p.pid})\nCommand: {p.args}\nOutput: {stdout}\nError: {stderr}")
+            print(dedent(f"""
+            ---------------------------------
+            Process failed (PID {p.pid})
+            Command: {p.args}
+            Output: {stdout}
+            Error: {stderr}
+            ---------------------------------
+            """))
 
     else:
         p.join()
@@ -204,6 +233,8 @@ def main():
 
     if not ml_ok:
         sys.exit(1)
+    else:
+        print("\n")
 
     if args.extract:
         brains = [b.strip() for b in args.extract.split(",") if b.strip()]
