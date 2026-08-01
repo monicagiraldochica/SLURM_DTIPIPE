@@ -99,15 +99,21 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
     else:
         prefix = orig_prefix
 
+    if os.path.isfile(f"{prefix}.nii.gz"):
+        print(f"{prefix}.nii.gz created\n")
+    else:
+        print(f"ERROR: could not extract first volume from {orig_prefix}.nii.gz")
+        return []
+
     # Create brain extract processes
     procs = []
-    #if run_all or fsl:
-    #    cmd1 = ["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]
-    #    if n_vols==1 or skip4Dmasking:
-    #        procs.append(runBashCommand(cmd1))
-    #    else:
-    #        cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
-    #        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+    if run_all or fsl:
+        cmd1 = ["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]
+        if n_vols==1 or skip4Dmasking:
+            procs.append(runBashCommand(cmd1))
+        else:
+            cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
 
     #if run_all or afni:
     #    cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
