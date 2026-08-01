@@ -101,30 +101,30 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
 
     # Create brain extract processes
     procs = []
-    if run_all or fsl:
-        cmd1 = ["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]
-        if n_vols==1 or skip4Dmasking:
-            procs.append(runBashCommand(cmd1))
-        else:
-            cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
-            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+    #if run_all or fsl:
+    #    cmd1 = ["bet", prefix, f"{prefix}_bet", "-f", "0.1", "-g", "0", "-m"]
+    #    if n_vols==1 or skip4Dmasking:
+    #        procs.append(runBashCommand(cmd1))
+    #    else:
+    #        cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
+    #        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
 
-    if run_all or afni:
-        cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
-        cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
-        cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "step(b)*a", "-prefix", f"{orig_prefix}_sklstrip_mask.nii.gz"]
-        if n_vols==1 or skip4Dmasking:
-            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
-        else:
-            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2, cmd3]))
+    #if run_all or afni:
+    #    cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
+    #    cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
+    #    cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "step(b)*a", "-prefix", f"{orig_prefix}_sklstrip_mask.nii.gz"]
+    #    if n_vols==1 or skip4Dmasking:
+    #        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+    #    else:
+    #        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2, cmd3]))
 
-    if run_all or freesurfer:
-        cmd1 = ["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]
-        if n_vols==1 or skip4Dmasking:
-            procs.append(runBashCommand(cmd1))
-        else:
-            cmd2 = ["mri_mask", brain_path, f"{prefix}_free_mask.nii.gz", f"{orig_prefix}_free_mask.nii.gz"]
-            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+    #if run_all or freesurfer:
+    #    cmd1 = ["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]
+    #    if n_vols==1 or skip4Dmasking:
+    #        procs.append(runBashCommand(cmd1))
+    #    else:
+    #        cmd2 = ["mri_mask", brain_path, f"{prefix}_free_mask.nii.gz", f"{orig_prefix}_free_mask.nii.gz"]
+    #        procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
     
     return procs
 
