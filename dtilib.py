@@ -118,17 +118,17 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
             cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
             procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
 
-    #if run_all or afni:
+    if run_all or afni:
         # Skull strip the first volume
-        #cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
+        cmd1 = ["3dSkullStrip", "-overwrite", "-input", f"{prefix}.nii.gz", "-prefix", f"{prefix}_sklstrip.nii.gz"]
         # Create the mask
-        #cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
+        cmd2 = ["3dcalc", "-a", f"{prefix}_sklstrip.nii.gz", "-expr", "step(a)", "-prefix", f"{prefix}_sklstrip_mask.nii.gz"]
         # Multiply the mask by the 4D file
-        #cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "step(b)*a", "-prefix", f"{orig_prefix}_sklstrip.nii.gz"]
-        #if n_vols==1 or skip4Dmasking:
-            #procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
-        #else:
-            #procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2, cmd3]))
+        cmd3 = ["3dcalc", "-a", brain_path, "-b", f"{prefix}_sklstrip_mask.nii.gz", "-expr", "step(b)*a", "-prefix", f"{orig_prefix}_sklstrip.nii.gz"]
+        if n_vols==1 or skip4Dmasking:
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+        else:
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2, cmd3]))
 
     #if run_all or freesurfer:
         #cmd1 = ["mri_synthstrip", "-i", f"{prefix}.nii.gz", "-o", f"{prefix}_free.nii.gz", "-m", f"{prefix}_free_mask.nii.gz"]
