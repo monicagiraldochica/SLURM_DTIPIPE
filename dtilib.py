@@ -115,9 +115,8 @@ def brainExtractNIFTI(brain_path: str, *, run_all: bool=False, fsl: bool=False, 
         if n_vols==1 or skip4Dmasking:
             procs.append(runBashCommand(cmd1))
         else:
-            procs.append(runBashCommand(cmd1))
-            #cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
-            #procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
+            cmd2 = ["fslmaths", f"{prefix}_bet_mask", "-bin", "-mul", brain_path, f"{orig_prefix}_bet"]
+            procs.append(runPipelineParallel(runPipeline, [cmd1, cmd2]))
 
     #if run_all or afni:
         # Skull strip the first volume
