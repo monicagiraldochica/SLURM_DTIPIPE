@@ -5,6 +5,7 @@ __purpose__ = "Analyze DTI data"
 
 # check python version
 import sys
+
 python_info = sys.version_info
 major = python_info.major or 0
 minor = python_info.minor or 0
@@ -14,11 +15,11 @@ if major!=3 or minor!=12 or micro!=10:
     print("ERROR: This program needs python/3.12.10")
     sys.exit(1)
 
-import subprocess
-import os
 import argparse
 import multiprocessing
+import os
 import re
+import subprocess
 from textwrap import dedent
 
 # Force each process to one thread for a more efficient use of CPUs
