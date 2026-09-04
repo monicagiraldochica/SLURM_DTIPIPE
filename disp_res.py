@@ -14,7 +14,7 @@ import sys
 from operator import itemgetter
 import datetime
 
-def printout(string,fout):
+def printout(string, fout):
     print(string)
     fout.write(string+'\n')
 
