@@ -6,6 +6,7 @@ __purpose__ = "Perform post eddy image manipulation"
 import sys
 import os
 import datetime
+import dtilib
 
 def trimCols(col1,col2,iname,oname):
     print("Keeping columns "+str(col1)+" to "+str(col2))
@@ -97,9 +98,20 @@ def final_bvecs_3(eddy,data,volsPos2,volsNeg2):
     os.remove(data+"rm_neg2")
     
 def nvols(filepath):
-    if os.path.isfile(filepath):
-        return int(os.popen("fslval "+filepath+" dim4").read().replace('\n','').replace(' ',''))
-    else:
+    if not os.path.isfile(filepath):
+        return 0
+
+    proc = dtilib.runBashCommand(["fslval", filepath, "dim4"])
+    stdout, stderr = proc.communicate()
+
+    if proc.returncode!=0:
+        print(f"ERROR: fslval failed for {filepath}: {stderr.strip()}")
+        return 0
+
+    try:
+       return int(stdout.strip())
+    except ValueError:
+        print(f"ERROR: Could not convert fslval output to int for {filepath}")
         return 0
          
 def run(sbj,sess,step):
