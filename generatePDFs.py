@@ -21,7 +21,7 @@ def generateAxialPDF(brain, masks, pdf_out):
         return pdf_out
     return ""
     
-def generateCoronalPDF(brain,masks,pdf_out):
+def generateCoronalPDF(brain, masks, pdf_out):
     print("\nGenerating coronal PDF (this will take a while)...")
     mrilib.fsleyesPDF_probtrackX_3(brain,masks[1:],pdf_out,masks[0])
     
