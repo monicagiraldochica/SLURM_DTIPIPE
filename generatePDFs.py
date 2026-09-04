@@ -9,7 +9,7 @@ import mrilib
 import fileslib
 import os
 
-def generateAxialPDF(brain,masks,pdf_out):
+def generateAxialPDF(brain, masks, pdf_out):
     print("\nGenerating axial PDF (this will take a while)...")
     if len(masks)==1:
         mrilib.fsleyesPDF_maskN(brain,masks,pdf_out,False,colors_opt=["red-yellow"])
