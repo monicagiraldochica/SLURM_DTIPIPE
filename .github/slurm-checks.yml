@@ -1,0 +1,43 @@
+name: Check SLURM script
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  slurm-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Downloads/checks out the repository files onto the GitHub Actions runner.
+      - name: Download repository
+        uses: actions/checkout@v6
+
+      # Uses Bash itself to check whether the script has valid Bash syntax.
+      - name: Check Bash syntax
+        run: bash -n brain_extract_slurm.sh
+
+      # Installs ShellCheck, a tool that finds common problems and bad practices.
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+       # Runs ShellCheck on the SLURM script to find potential shell scripting issues.
+      - name: Check shell script
+        run: shellcheck brain_extract_slurm.sh
+
+      # Checks for SBATCH directives that are missing the required "--" before the option name.
+      # Or that have two == instead of one.
+      - name: Check SBATCH directives
+        run: |
+          if grep -nE '^#SBATCH[[:space:]]+--[^=[:space:]]+==+' brain_extract_slurm.sh; then
+            echo "ERROR: Found an SBATCH option containing == instead of ="
+            exit 1
+          fi
+
+          if grep -nE '^#SBATCH[[:space:]]+[^-[:space:]]' brain_extract_slurm.sh; then
+            echo "ERROR: Found an invalid SBATCH directive"
+            exit 1
+          fi
